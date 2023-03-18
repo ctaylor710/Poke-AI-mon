@@ -1,0 +1,10 @@
+Annihilape @ Air Balloon  
+Ability: Intimidate  
+Tera Type: Fighting  
+EVs: 252 HP / 4 Atk / 252 Spe  
+Jolly Nature  
+- Close Combat  
+- Rage Fist  
+- Final Gambit  
+- Drain Punch  
+

@@ -27,9 +27,12 @@ class move:
 		self.secondaries = False
 		self.ignoreDefensive = False
 		self.breaksProtect = False
+		self.willCrit = False
 		self.overrideOffensivePokemon = 'None'
 		self.overrideDefensiveStat = 'None'
 		self.overrideOffensiveStat = 'None'
+
+		self.isCrit = False
 
 	def addData(self, line):
 		bp = line.find('bp')
@@ -58,6 +61,7 @@ class move:
 		secondaries = line.find('secondaries')
 		ignoreDefensive = line.find('ignoreDefensive')
 		breaksProtect = line.find('breaksProtect')
+		willCrit = line.find('willCrit')
 		overrideOffensivePokemon = line.find('overrideOffensivePokemon')
 		overrideDefensiveStat = line.find('overrideDefensiveStat')
 		overrideOffensiveStat = line.find('overrideOffensiveStat')
@@ -214,6 +218,11 @@ class move:
 
 		if breaksProtect != -1:
 			self.breaksProtect = False if self.breaksProtect else True
+
+		if willCrit != -1:
+			self.willCrit = False if self.willCrit else True
+			if self.willCrit:
+				self.isCrit = True
 
 		if overrideOffensivePokemon != -1:
 			startIndex = line.find(':', overrideOffensivePokemon)

@@ -1,5 +1,5 @@
-Annihilape @ Air Balloon  
-Ability: Chlorophyll  
+Annihilape @ Grassy Seed  
+Ability: Infiltrator  
 Tera Type: Fighting  
 EVs: 252 HP / 4 Atk / 252 Spe  
 Jolly Nature  

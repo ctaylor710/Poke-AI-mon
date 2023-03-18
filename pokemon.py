@@ -31,6 +31,8 @@ class pokemon:
 		self.natureBoosts = {'hp':1, 'at':1, 'df':1, 'sa':1, 'sd':1, 'sp':1}
 		self.status = 'Healthy'
 		self.statusList = ['Healthy', 'Sleep', 'Poison', 'Burn', 'Frozen', 'Paralyze', 'Toxic']
+		self.ignoresScreens = False
+		self.currHP = 0
 
 
 	def addData(self, database):
@@ -88,11 +90,15 @@ class pokemon:
 			if stat == 'hp':
 				self.stats[stat] = math.floor( ( math.floor( ((2*self.name.bs[stat] + self.IVs[stat] + math.floor(self.EVs[stat]/4)) * \
 					self.level) / 100) ) + self.level + 10)
+				self.currHP = self.stats[stat]
 			else:
 				self.stats[stat] = math.floor( ( math.floor( ((2*self.name.bs[stat] + self.IVs[stat] + math.floor(self.EVs[stat]/4)) * \
 					self.level) / 100) + 5) * self.natureBoosts[stat])
 	def addBoosts(self, stat, amount):
-		self.boosts[stat] += amount
+		if amount > 0:
+			self.boosts[stat] = min(self.boosts[stat] + amount, +6)
+		else:
+			self.boosts[stat] = max(self.boosts[stat] + amount, -6)
 
 	def __str__(self):
 		str=f'Pokemon: {self.name.name}\nItem: {self.item}\nAbility: {self.ability}\nTera type: {self.tera}\nEV Spread: {self.EVs}\n'

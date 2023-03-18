@@ -20,8 +20,7 @@ def getModifiedStat(stat, number):
 	return stat
 
 def getFinalSpeed(pokemon, field, sideName):
-	weather = field.weather
-	terrain = field.terrain
+
 	speed = getModifiedStat(pokemon.stats['sp'], pokemon.boosts['sp'])
 	speedMods = []
 	side = field.userSide
@@ -40,7 +39,10 @@ def getFinalSpeed(pokemon, field, sideName):
 	elif pokemon.ability == 'Quick Feet' and pokemon.status != 'Healthy':
 		speedMods.append(1.5)
 	elif pokemon.ability == 'Slow Start' and pokemon.abilityOn:
-		speedModes.append(0.5)
+		speedMods.append(0.5)
+	elif highestStat(pokemon) == 'sp' and ((pokemon.ability == 'Protosynthesis' and (field.weather == 'Sun' or pokemon.item == 'Booster Energy')) or \
+		(pokemon.ability == 'Quark Drive' and (terrain == 'Electric' or pokemon.item == 'Booster Energy'))):
+		speedMods.append(1.5)
 
 	if pokemon.item == 'Choice Scarf':
 		speedMods.append(1.5)
@@ -73,8 +75,8 @@ def effectiveness(attackingType, defendingTypes):
 		effectiveness *= database.typesDict[attackingType].effectiveness[types]
 	return effectiveness
 
-def getMoveEffectiveness(move, defender, isGhostRevealed, field):
-	if isGhostRevealed and ('Ghost' in defender.name.types) and (move.type == 'Normal' or move.type == 'Fighting'):
+def getMoveEffectiveness(move, defender, field):
+	if field.isGhostRevealed and ('Ghost' in defender.name.types) and (move.type == 'Normal' or move.type == 'Fighting'):
 		return 1
 	elif move.name == 'Freeze-Dry' and ('Water' in defender.name.types):
 		return 2
@@ -86,5 +88,83 @@ def getMoveEffectiveness(move, defender, isGhostRevealed, field):
 	else:
 		return effectiveness(move.type, defender.name.types)
 
+def checkIntimidate(source, target):
+	blocked = target.ability == 'Clear Body' or target.ability == 'White Smoke' or target.ability == 'Hyper Cutter' or target.ability == 'Full Metal Body' or \
+		target.ability == 'Inner Focus' or target.ability == 'Own Tempo' or target.ability == 'Oblivious' or target.ability == 'Scrappy' or target.item == 'Clear Amulet'
+	if source.ability == 'Intimidate' and ~blocked:
+		if target.ability == 'Contrary' or target.ability == 'Defiant' or target.ability == 'Guard Dog':
+			target.addBoosts('at', +1)
+		elif target.ability == 'Simple':
+			target.addBoosts('at', -2)
+		else:
+			target.addBoosts('at', -1)
 
+		if target.ability == 'Competitive':
+			target.addBoosts('sa', +2)
+	return target
+
+
+def checkInfiltrator(sourceSide):
+	for pokemon in sourceSide:
+		print(pokemon)
+		if pokemon.ability == 'Infiltrator':
+			pokemon.ignoresScreens = True
+	return sourceSide
+
+def checkSeedBoost(pokemon, field):
+	if pokemon.item == 'None':
+		return
+	if field.terrain != 'None' and pokemon.item.find('Seed') != -1:
+		terrainSeed = pokemon.item[:pokemon.item.find(' ')]
+		if field.terrain == terrainSeed:
+			if terrainSeed == 'Grassy' or terrainSeed == 'Electric':
+				pokemon.addBoosts('df', -1) if pokemon.ability == 'Contrary' else pokemon.addBoosts('df', +1)
+			else:
+				pokemon.addBoosts('sd', -1) if pokemon.ability == 'Contrary' else pokemon.addBoosts('sd', +1)
+	return pokemon
+
+
+def chainMods(mods):
+	M = 1
+	for mod in mods:
+		M *= mod
+	return M
+
+def getBaseDamage(level, basePower, userAtk, oppDef):
+	return math.floor( math.floor( math.floor( (2*level)/5+2 )*basePower*userAtk/oppDef )/50+2 )
+
+def highestStat(pokemon):
+	bestStat = 'at'
+	for stat in ['df', 'sa', 'sd', 'sp']:
+		if getModifiedStat(pokemon.stats[stat], pokemon.boosts[stat]) > getModifiedStat(pokemon.stats[bestStat], pokemon.boosts[bestStat]):
+			bestStat = stat
+	return bestStat
+
+def getFinalDamage(baseDamage, randInt, effectiveness, isBurned, stabMod, finalMod, protected):
+	damage = math.floor(baseDamage*(85+randInt)/100) # Damage roll, damage is randomly between 85% and 100% of max possible damage
+	damage = damage*stabMod
+	damage = math.floor(damage*effectiveness)
+	if isBurned:
+		damage = math.floor(damage/2)
+	if protected:
+		damage = 0
+	return math.round(max(0, damageAmount*finalMod))
+
+def getWeightFactor(pokemon):
+	if pokemon.ability == 'Heavy Metal':
+		return 2
+	elif pokemon.ability == 'Light Metal' or pokemon.item == 'Float Stone':
+		return 0.5
+	else:
+		return 1
+
+def handleFixedDamageMoves(pokemon, move):
+	if move.name == 'Seismic Toss' or move.name == 'Night Shade':
+		return pokemon.level
+	elif move.name == 'Dragon Rage':
+		return 40
+	elif move.name == 'Sonic Boom':
+		return 20
+	else:
+		return -1
 

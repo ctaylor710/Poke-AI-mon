@@ -14,3 +14,4 @@ class field:
 		self.vesselOfRuin = False
 		self.userSide = side()
 		self.opponentSide = side()
+		self.isGhostRevealed = False
