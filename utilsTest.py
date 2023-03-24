@@ -14,24 +14,32 @@ database.addMoves()
 database.addTypes()
 database.addSpecies()
 database.addNatures()
-#for types in database.typesDict.keys():
-#	print(types)
+for moves in database.movesDict.keys():
+	if(database.movesDict[moves].name == 'Head Smash'):
+		print(database.movesDict[moves])
 annihilape = pokemon()
 testMon = pokemon()
 annihilape.addData(database)
 testMon.addData(database)
-print(annihilape)
 field = field()
 field.weather = 'Sun'
 field.terrain = 'Grassy'
-field.userSide.pokes[0] = annihilape
-print(annihilape.stats)
+# print(annihilape.natureBoosts)
 annihilape.addBoosts('at', +1)
-annihilape.stats = utils.computeFinalStats(annihilape, field, 'user')
-print(annihilape.stats)
+# print(annihilape.stats)
 testMove = database.movesDict['Flamethrower']
-annihilape = utils.checkInfiltrator([annihilape])[0]
-print(annihilape.ignoresScreens)
+field.userSide = utils.checkInfiltrator(field.userSide)
+# print(field.userSide.pokes[0].ignoresScreens)
 annihilape = utils.checkSeedBoost(annihilape, field)
-print(annihilape.boosts)
-print(utils.getBaseDamage(100, testMove.bp, annihilape.stats['at'], annihilape.stats['df']))
+# print(annihilape.stats)
+# print(utils.getBaseDamage(100, testMove.bp, annihilape.stats['at'], annihilape.stats['df']))
+field.userSide.pokes[0] = annihilape
+field.opponentSide.pokes[0] = testMon
+annihilape.stats = utils.computeFinalStats(annihilape, field, 'user')
+attacker = field.userSide.pokes[0]
+attackerSide = 'user'
+defender = field.opponentSide.pokes[0]
+defenderSide = 'opponent'
+move = attacker.moves[1]
+moveDamage = damageCalc.damageCalc(attacker, attackerSide, defender, defenderSide, move, field)
+print(moveDamage)

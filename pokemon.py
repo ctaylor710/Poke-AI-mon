@@ -21,18 +21,21 @@ class pokemon:
 		self.ability = 'None'
 		self.abilityOn = False
 		self.tera = 'None'
+		self.isTera = False
 		self.EVs = {'hp':0, 'at':0, 'df':0, 'sa':0, 'sd':0, 'sp':0}
 		self.IVs = {'hp':31, 'at':31, 'df':31, 'sa':31, 'sd':31, 'sp':31}
 		self.level = 100
 		self.nature = nature()
 		self.moves = []
 		self.stats = self.name.bs
+		self.rawStats = 0
 		self.boosts = {'hp':0, 'at':0, 'df':0, 'sa':0, 'sd':0, 'sp':0}
 		self.natureBoosts = {'hp':1, 'at':1, 'df':1, 'sa':1, 'sd':1, 'sp':1}
 		self.status = 'Healthy'
 		self.statusList = ['Healthy', 'Sleep', 'Poison', 'Burn', 'Frozen', 'Paralyze', 'Toxic']
 		self.ignoresScreens = False
 		self.currHP = 0
+		self.alliesFainted = 0
 
 
 	def addData(self, database):
@@ -94,6 +97,8 @@ class pokemon:
 			else:
 				self.stats[stat] = math.floor( ( math.floor( ((2*self.name.bs[stat] + self.IVs[stat] + math.floor(self.EVs[stat]/4)) * \
 					self.level) / 100) + 5) * self.natureBoosts[stat])
+
+		self.rawStats = self.stats.copy()
 	def addBoosts(self, stat, amount):
 		if amount > 0:
 			self.boosts[stat] = min(self.boosts[stat] + amount, +6)
@@ -105,9 +110,3 @@ class pokemon:
 		str+=f'Nature: {self.nature.name}\nMoves: {self.moves[0].name}, {self.moves[1].name}, {self.moves[2].name}, {self.moves[3].name}'
 
 		return str
-
-
-
-
-
-	

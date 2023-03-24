@@ -8,10 +8,10 @@ class field:
 		self.terrainList = ['Electric', 'Grassy', 'Psychic', 'Misty']
 		self.gravity = False
 		self.trickRoom = False
-		self.beadsOfRuin = False
-		self.swordOfRuin = False
-		self.tabletsOfRuin = False
-		self.vesselOfRuin = False
+		self.isBeadsOfRuin = False
+		self.isSwordOfRuin = False
+		self.isTabletsOfRuin = False
+		self.isVesselOfRuin = False
 		self.userSide = side()
 		self.opponentSide = side()
 		self.isGhostRevealed = False

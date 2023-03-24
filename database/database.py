@@ -15,6 +15,7 @@ from database.natures import nature
 class database:
 
 	def __init__(self):
+		self.name = species()
 		self.movesDict = {}
 		self.typesDict = {}
 		self.speciesDict = {}
@@ -96,4 +97,3 @@ class database:
 				newNature.addData(line)
 				self.naturesDict[newNature.name] = newNature
 		naturesFile.close()
-

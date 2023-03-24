@@ -9,8 +9,8 @@ class nature:
 		endIndex = line.find(']')
 		tempLine = line[startIndex+1:endIndex].replace('\'', '')
 		tempList = tempLine.split(',')
-		self.boost = tempList[0]
-		self.lower = tempList[1]
+		self.boost = tempList[0].strip()
+		self.lower = tempList[1].strip()
 	def __str__(self):
 		str=f'Name: {self.name}\nBoosted Stat: {self.boost}\nLowered Stat: {self.lower}\n'
 		return str

@@ -105,11 +105,12 @@ def checkIntimidate(source, target):
 
 
 def checkInfiltrator(sourceSide):
-	for pokemon in sourceSide:
-		print(pokemon)
-		if pokemon.ability == 'Infiltrator':
-			pokemon.ignoresScreens = True
+	for i in range(len(sourceSide.pokes)):
+		if sourceSide.pokes[i].name.name != 'None':
+			if sourceSide.pokes[i].ability == 'Infiltrator':
+				sourceSide.pokes[i].ignoresScreens = True
 	return sourceSide
+			
 
 def checkSeedBoost(pokemon, field):
 	if pokemon.item == 'None':
@@ -148,7 +149,7 @@ def getFinalDamage(baseDamage, randInt, effectiveness, isBurned, stabMod, finalM
 		damage = math.floor(damage/2)
 	if protected:
 		damage = 0
-	return math.round(max(0, damageAmount*finalMod))
+	return round(max(0, damage*finalMod))
 
 def getWeightFactor(pokemon):
 	if pokemon.ability == 'Heavy Metal':
@@ -157,6 +158,15 @@ def getWeightFactor(pokemon):
 		return 0.5
 	else:
 		return 1
+
+def countBoosts(boosts):
+	summation = 0
+
+	for stat in boosts.keys():
+		boost = boosts[stat]
+		if boost > 0:
+			summation += boost
+	return summation
 
 def handleFixedDamageMoves(pokemon, move):
 	if move.name == 'Seismic Toss' or move.name == 'Night Shade':
@@ -167,4 +177,3 @@ def handleFixedDamageMoves(pokemon, move):
 		return 20
 	else:
 		return -1
-

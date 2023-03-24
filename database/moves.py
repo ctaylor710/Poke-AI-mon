@@ -7,8 +7,9 @@ class move:
 		self.type = 'Normal'
 		self.category = 'Physical'
 		self.multihit = [1]
-		self.drain = [0]
-		self.recoil = [0]
+		self.hits = 1
+		self.drain = 0
+		self.recoil = 0
 		self.mindBlownRecoil = False
 		self.hasCrashDamage = False
 		self.struggleRecoil = False
@@ -20,6 +21,7 @@ class move:
 		self.isSound = False
 		self.isBullet = False
 		self.isPulse = False
+		self.isBite = False
 		self.isZ = False
 		self.isMax = False
 		self.isWind = False
@@ -54,6 +56,7 @@ class move:
 		isSound = line.find('isSound')
 		isBullet = line.find('isBullet')
 		isPulse = line.find('isPulse')
+		isBite = line.find('isBite')
 		isZ = line.find('isZ')
 		isMax = line.find('isMax')
 		isWind = line.find('isWind')
@@ -130,8 +133,10 @@ class move:
 				tempLine = line[startIndex+1:endIndex].strip().replace('[', '')
 				tempLine = tempLine.strip().replace(']', '')
 				self.drain = list(map(int, tempLine.split(',')))
+				self.drain = self.drain[0]/self.drain[1]
 			else:
-				self.drain = line[startIndex+1:endIndex].strip()
+				self.drain = int(line[startIndex+1:endIndex].strip())
+
 
 		if recoil != -1:
 			singleValue = False
@@ -146,6 +151,7 @@ class move:
 				tempLine = line[startIndex+1:endIndex].strip().replace('[', '')
 				tempLine = tempLine.strip().replace(']', '')
 				self.recoil = list(map(int, tempLine.split(',')))
+				self.recoil = self.recoil[0]/self.recoil[1]
 			else:
 				self.recoil = line[startIndex+1:endIndex].strip()
 
@@ -196,6 +202,9 @@ class move:
 			self.isBullet = False if self.isBullet else True
 
 		if isPulse != -1:
+			self.isPulse = False if self.isPulse else True
+
+		if isBite != -1:
 			self.isPulse = False if self.isPulse else True
 
 		if isZ != -1:
