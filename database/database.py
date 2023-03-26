@@ -64,7 +64,7 @@ class database:
 		typesFile.close()
 
 	def addSpecies(self):
-		speciesFile = open("database/species.txt", "r")
+		speciesFile = open("database/species.txt", "r",encoding="utf8")
 		for line in speciesFile:
 			line = line.strip()
 			if len(line) > 0:

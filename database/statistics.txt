@@ -1,0 +1,54 @@
++----------------------------------------+ 
+ | Flutter Mane                           | 
+ +----------------------------------------+ 
+ | Raw count: 1599258                     | 
+ | Avg. weight: 0.0070597489074           | 
+ | Viability Ceiling: 87                  | 
+ +----------------------------------------+ 
+ | Abilities                              | 
+ | Protosynthesis 100.000%                | 
+ +----------------------------------------+ 
+ | Items                                  | 
+ | Choice Specs 32.455%                   | 
+ | Focus Sash 24.491%                     | 
+ | Life Orb 21.710%                       | 
+ | Booster Energy 18.689%                 | 
+ | Other  2.655%                          | 
+ +----------------------------------------+ 
+ | Spreads                                | 
+ | Timid:4/0/0/252/0/252 31.476%          | 
+ | Timid:0/0/0/252/4/252  7.836%          | 
+ | Modest:4/0/0/252/0/252  3.210%         | 
+ | Timid:0/0/4/252/0/252  2.008%          | 
+ | Modest:252/0/228/4/4/20  1.947%        | 
+ | Timid:4/0/4/244/4/252  1.074%          | 
+ | Other 52.450%                          | 
+ +----------------------------------------+ 
+ | Moves                                  | 
+ | Shadow Ball 96.588%                    | 
+ | Moonblast 77.966%                      | 
+ | Dazzling Gleam 75.914%                 | 
+ | Protect 62.255%                        | 
+ | Perish Song 17.344%                    | 
+ | Power Gem 17.110%                      | 
+ | Mystical Fire 12.382%                  | 
+ | Trick Room  9.077%                     | 
+ | Icy Wind  7.579%                       | 
+ | Taunt  4.663%                          | 
+ | Other 19.123%                          | 
+ +----------------------------------------+ 
+ | Teammates                              | 
+ | Iron Bundle 35.359%                    | 
+ | Great Tusk 28.780%                     | 
+ | Iron Hands 27.443%                     | 
+ | Arcanine 24.017%                       | 
+ | Dondozo 23.647%                        | 
+ | Tatsugiri 23.029%                      | 
+ | Amoonguss 22.015%                      | 
+ | Dragonite 21.874%                      | 
+ | Kingambit 19.022%                      | 
+ | Gholdengo 17.422%                      | 
+ | Roaring Moon 15.956%                   | 
+ +----------------------------------------+ 
+ | Checks and Counters                    | 
+ +----------------------------------------+ 
