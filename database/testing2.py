@@ -1,56 +1,56 @@
+# TODO 1. Convert everything into a class
 class statistics:
     def __int__(self):
-        self.name = 'None'
-        self.AbilitiesDict  = {}
-        self.ItemsDict  = {}
-        self.MovesDict  = {}
-        self.NaturesDict  = {}
-        self.SpreadDict  = {}
+        self.name='None'
+        self.AbilitiesDict = {}
+        self.ItemsDict = {}
+        self.MovesDict = {}
+        self.NaturesDict = {}
+        self.SpreadDict = {}
         # Initialize all the flags to False
-        self.abilitiedata = False
+        self.abilitiesdata = False
         self.itemdata = False
         self.spreadsdata = False
         self.movedata = False
 
     def addData(self, line):
-        # Find the location of the words and set a flag on it
         Abilities = line.find('Abilities')
         if Abilities != -1:
-            self.abilitiedata = True
+            self.abilitiesdata = True
             self.itemdata = False
             self.spreadsdata = False
             self.movedata = False
 
         Items = line.find('Items')
         if Items != -1:
-            self.abilitiedata = False
+            self.abilitiesdata = False
             self.itemdata = True
             self.spreadsdata = False
             self.movedata = False  
     
         Spreads = line.find('Spreads')
         if Spreads != -1:
-            self.abilitiedata = False
+            self.abilitiesdata = False
             self.itemdata = False
             self.spreadsdata = True
             self.movedata = False
         
         Moves = line.find('Moves')
         if Moves != -1:
-            self.abilitiedata = False
+            self.abilitiesdata = False
             self.itemdata = False
             self.spreadsdata = False
             self.movedata = True
         # Teammates is a data we don't need, so I used to reset all the flag back to false
         Teammates = line.find('Teammates')
         if Teammates != -1:
-            self.abilitiedata = False
+            self.abilitiesdata = False
             self.itemdata = False
             self.spreadsdata = False
             self.movedata = False
 
         
-        if self.abilitiedata == True:
+        if self.abilitiesdata == True:
             startIndex = line.find('|')
             endIndex = line.find('+')
             tempLine = line[startIndex+1:endIndex].strip()
@@ -147,5 +147,47 @@ class statistics:
                 self.MovesDict [key] = item
 
     def __str__(self):
-        str=f'Species: {self.name}\nAbilities: {self.AbilitiesDict}\nItems: {self.ItemsDict}\nMoves: {self.MovesDict}\nNatures: {self.NaturesDict}\nSpreads: {self.SpreadDict}\n'
+        str=f'Species: {self.name}\nAbilities: {self.AbilitiesDict}\nItems: {self.ItemsDict}\nMoves: {self.MovesDict}\nNatures: {self.NaturesDict}\n'
+        str+=f'Spreads: {self.SpreadDict}\n'
         return str
+
+# TODO 2. Initiate the data
+statisticsDict = {}
+namedata = True # This set up a flag to make sure the data taken are the name of pokemon
+statisticsFile = open("database/statistics.txt","r",encoding="utf8")
+
+for line in statisticsFile:
+    line = line.strip()
+    if len(line) > 0:
+        # Get Index, Raw is where the name ends, and check is where the next name started
+        Raw = line.find('Raw count')
+        check = line.find('Checks and Counters')
+        # Set the namedata flag to off if it is at the raw count
+        if Raw != -1:
+            namedata = False
+        if check != -1:
+            namedata = True
+
+        newStats = statistics()
+        newStats.addData(line)
+
+        if namedata == True:
+            # Get Index
+            startIndex = line.find('|')
+            endIndex = line.find('+')
+            tempLine = line[startIndex+1:endIndex].strip()
+
+            # Get rid of the 'Check and Counters' and empty spaces
+            if tempLine != 'Checks and Counters' and len(tempLine) > 0:
+                newStats.name = tempLine
+
+                
+        # else:
+        #     newStats.addData(line)
+        #     statisticsDict[newStats.name] = newStats
+            
+
+statisticsFile.close()
+
+# print(statisticsDict)
+            
