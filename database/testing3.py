@@ -1,161 +1,59 @@
-class statistics:
-	def __init__(self):
-		self.name='None'
-		# All the dictionary attributes
-		self.AbiDic = {}
-		self.ItemDic = {}
-		self.MoveDic = {}
-		self.SpreadDic = {}
-		# All the flag attributes, initialize them as False
-		self.AbiFlag= False
-		self.ItemFlag = False
-		self.MoveFlag = False
-		self.SpreadFlag = False
+from species import species
+from testing2 import statistics
+
+speciesDic = {}
+speciesFile = open("database/species.txt", "r",encoding="utf8")
+for line in speciesFile:
+	line = line.strip()
+	if len(line) > 0:
+		if line[0] == '\'':
+			colonIndex = line.find(':')
+			newSpecies = species()
+			newSpecies.name = line[1:colonIndex-1]
+			if newSpecies.name in speciesDic.keys():
+				newSpecies = speciesDic[newSpecies.name]
+			if line.find('}') != -1:
+				newSpecies.addData(line)
+			else:
+				while line[0] != '}':
+					newSpecies.addData(line)
+					line = next(speciesFile)
 			
-	def addData(self,line):
-		# Get the location of the specific word I am looking for
-		AbiIdx = line.find('Abilities')
-		ItemIdx = line.find('Items')
-		MoveIdx = line.find('Moves')
-		SpreadIdx = line.find('Spreads')
-		# If the word is detected, change the flag to extract datas
-		if AbiIdx != -1:
-			self.AbiFlag = True
-			self.ItemFlag = False
-			self.MoveFlag = False
-			self.SpreadFlag = False
-		if ItemIdx != -1:
-			self.AbiFlag = False
-			self.ItemFlag = True
-			self.MoveFlag = False
-			self.SpreadFlag = False
-		if MoveIdx != -1:
-			self.AbiFlag = False
-			self.ItemFlag = False
-			self.MoveFlag = True
-			self.SpreadFlag = False
-		if SpreadIdx != -1:
-			self.AbiFlag = False
-			self.ItemFlag = False
-			self.MoveFlag = False
-			self.SpreadFlag = True
-		# Storing the data in a dctionary
-		if self.AbiFlag == True:
-			startIndex = line.find('|')
-			endIndex = line.find('+')
-			tempLine = line[startIndex+1:endIndex].strip()
-			if any(chr.isdigit() for chr in tempLine) == True:
-				tempLine = tempLine.strip("%")
-				tempLine = tempLine.split(" ")
-				tempLine = [x for x in tempLine if x != '']
-				key = ''
-				item = 0
-				for idx in range(len(tempLine)):
-					valuecheck = '.'
-					if idx == 0:
-						key += tempLine[idx]
-					elif valuecheck not in tempLine[idx] and idx != 0:
-						tempLine[idx] = ' ' + tempLine[idx]
-						key += tempLine[idx]
-					else:
-						item = round(float(tempLine[idx])/100,5)
-				self.AbiDic[key] = item
-				
-		if self.ItemFlag == True:
-			startIndex = line.find('|')
-			endIndex = line.find('+')
-			tempLine = line[startIndex+1:endIndex].strip()
-			if any(chr.isdigit() for chr in tempLine) == True:
-				tempLine = tempLine.strip("%")
-				tempLine = tempLine.split(" ")
-				tempLine = [x for x in tempLine if x != '']
-				key = ''
-				item = 0
-				for idx in range(len(tempLine)):
-					valuecheck = '.'
-					if idx == 0:
-						key += tempLine[idx]
-					elif valuecheck not in tempLine[idx] and idx != 0:
-						tempLine[idx] = ' ' + tempLine[idx]
-						key += tempLine[idx]
-					else:
-						item = round(float(tempLine[idx])/100,5)
-				self.ItemDic[key] = item
-				
-		if self.MoveFlag == True:
-			startIndex = line.find('|')
-			endIndex = line.find('+')
-			tempLine = line[startIndex+1:endIndex].strip()
-			if any(chr.isdigit() for chr in tempLine) == True:
-				tempLine = tempLine.strip("%")
-				tempLine = tempLine.split(" ")
-				tempLine = [x for x in tempLine if x != '']
-				key = ''
-				item = 0
-				for idx in range(len(tempLine)):
-					valuecheck = '.'
-					if idx == 0:
-						key += tempLine[idx]
-					elif valuecheck not in tempLine[idx] and idx != 0:
-						tempLine[idx] = ' ' + tempLine[idx]
-						key += tempLine[idx]
-					else:
-						item = round(float(tempLine[idx])/100,5)
-				self.MoveDic[key] = item
-				
-		if self.SpreadFlag == True:
-			startIndex = line.find('|')
-			endIndex = line.find('+')
-			tempLine = line[startIndex+1:endIndex].strip()
-			if any(chr.isdigit() for chr in tempLine) == True:
-				tempLine = tempLine.strip("%")
-				tempLine = tempLine.split(" ")
-				tempLine = [x for x in tempLine if x != '']
-				key = ''
-				item = 0
-				for idx in range(len(tempLine)):
-					valuecheck = '.'
-					if idx == 0:
-						key += tempLine[idx]
-					elif valuecheck not in tempLine[idx] and idx != 0:
-						tempLine[idx] = ' ' + tempLine[idx]
-						key += tempLine[idx]
-					else:
-						item = round(float(tempLine[idx])/100,5)
-				self.SpreadDic[key] = item
-			
-	def __str__(self):
-		str = f'Species: {self.name}\nAbilities: {self.AbiDic}\nItems: {self.ItemDic}\n'
-		str += f'Moves: {self.MoveDic}\nSpreads: {self.SpreadDic}\n'
-		return str
+			speciesDic[newSpecies.name] = newSpecies
+speciesFile.close()
+
+nameList = list(speciesDic.keys())
+# print(name)
 
 # Initialize the data
 statsDic = {}
-nameFlag = True # set the name flag to True so it can extract the first pokemon's data
+nameFlag = False # set the name flag to True so it can extract the first pokemon's data
 statFile = open('database/statistics.txt','r',encoding='utf8')
 # Read the data from the file
+newStates = statistics()
 for line in statFile:
 	line = line.strip()
-	if len(line)>0:
-		
-		RawIdx = line.find('Raw count')
-		check = line.find('Checks and Counters')
-		if RawIdx != -1:
-			nameFlag = False
-		if check != -1:
-			nameFlag = True
-
-		newStates = statistics()	
+	# print(line)
+	if any(name in line for name in nameList) and '%' not in line:
+		nameFlag = True
+	else:
+		nameFlag = False
+	# print(line,'     ',nameFlag)
+	if len(line) > 0:
 		if nameFlag == True:
+			newStates = statistics()
+			newStates.addData(line)	
 			startIndex = line.find('|')
 			endIndex = line.find('+')
 			tempLine = line[startIndex+1:endIndex].strip()
-			if tempLine != 'Checks and Counters' and len(tempLine) > 0:
-				newStates.name = tempLine
-				print(newStates.name)
+			newStates.name = tempLine
+			# print(newStates)
 		else:
 			newStates.addData(line)
-			print(newStates)
+		statsDic[newStates.name ] = newStates
+print(statsDic['Gogoat'].MoveDic)
+
+	
 
 statFile.close
 
