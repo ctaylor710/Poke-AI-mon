@@ -117,8 +117,8 @@ for line in files:
                 else:
                     # it's the probability
                     item = round(float(tempLine[idx])/100,5)
-            SpreadDict[key] = item
-            # print(SpreadDict)
+        SpreadDict[key] = item
+        print(SpreadDict)
 
 
     if movedata == True:

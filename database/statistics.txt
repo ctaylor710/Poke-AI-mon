@@ -6344,7 +6344,7 @@
  | Kingambit 89.145%                      | 
  | Mimikyu  5.710%                        | 
  | Iron Bundle  3.847%                    | 
- | Garganacl  3.697%                      | 
+ | Garganacl  3.697%                      |
  | Arcanine  3.697%                       | 
  | Chansey  3.697%                        | 
  | Chansey  3.697%                        | 

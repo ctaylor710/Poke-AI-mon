@@ -97,3 +97,5 @@ class database:
 				self.naturesDict[newNature.name] = newNature
 		naturesFile.close()
 
+		
+

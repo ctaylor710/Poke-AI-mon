@@ -1,5 +1,6 @@
 # TODO 1. Convert everything into a class
 class statistics:
+    
     def __int__(self):
         self.name='None'
         self.AbilitiesDict = {}
@@ -169,7 +170,7 @@ for line in statisticsFile:
             namedata = True
 
         newStats = statistics()
-        newStats.addData(line)
+        print(newStats.abilitiesdata)
 
         if namedata == True:
             # Get Index
