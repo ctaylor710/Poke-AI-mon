@@ -11,6 +11,7 @@ from database.moves import move
 from database.pokeTypes import pokeType
 from database.species import species
 from database.natures import nature
+from database.statistics import statistics
 
 class database:
 
@@ -19,6 +20,7 @@ class database:
 		self.typesDict = {}
 		self.speciesDict = {}
 		self.naturesDict = {}
+		self.statsDict = {}
 
 	def addMoves(self):
 		movesFile = open("database/moves.txt", "r")
@@ -96,6 +98,34 @@ class database:
 				newNature.addData(line)
 				self.naturesDict[newNature.name] = newNature
 		naturesFile.close()
+	
+	def addStat(self):
+		nameList = list(self.speciesDict.keys())
+		nameFlag = False # set the name flag to True so it can extract the first pokemon's data
+		statFile = open('database/statistics.txt','r',encoding='utf8')
+		# Read the data from the file
+		newStates = statistics()
+		for line in statFile:
+			line = line.strip()
+			# print(line)
+			if any(name in line for name in nameList) and '%' not in line:
+				nameFlag = True
+			else:
+				nameFlag = False
+			# print(line,'     ',nameFlag)
+			if len(line) > 0:
+				if nameFlag == True:
+					newStates = statistics()
+					newStates.addData(line)	
+					startIndex = line.find('|')
+					endIndex = line.find('+')
+					tempLine = line[startIndex+1:endIndex].strip()
+					newStates.name = tempLine
+					# print(newStates)
+				else:
+					newStates.addData(line)
+				self.statsDict[newStates.name ] = newStates
+		statFile.close
 
 		
 

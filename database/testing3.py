@@ -51,7 +51,7 @@ for line in statFile:
 		else:
 			newStates.addData(line)
 		statsDic[newStates.name ] = newStates
-print(statsDic['Gogoat'].MoveDic)
+print(statsDic)
 
 	
 
