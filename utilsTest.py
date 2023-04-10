@@ -15,9 +15,24 @@ database.addMoves()
 database.addTypes()
 database.addSpecies()
 database.addNatures()
-#for moves in database.movesDict.keys():
-#	if(database.movesDict[moves].name == 'Head Smash'):
-#		print(database.movesDict[moves])
+#for moves in database.speciesDict.keys():
+#	if moves == 'Flutter Mane':
+#		print(database.speciesDict[moves])
+testTeam = []
+fileName = input('Enter team sheet: ')
+file = open(f'pokemonFiles/{fileName}')
+index = -1
+for line in file:
+	line = line.strip()
+	if len(line) > 0:
+		words = line.split('@')
+		words[0] = words[0].strip()
+		if words[0] in database.speciesDict.keys():
+			testTeam.append(pokemon())
+			index += 1
+	testTeam[-1].addDataLine(database, line)
+print(testTeam[0], testTeam[1])
+
 annihilape = pokemon()
 testMon = pokemon()
 annihilape.addData(database)
@@ -37,11 +52,12 @@ annihilape = utils.checkSeedBoost(annihilape, field)
 field.userSide.pokes[0] = annihilape
 field.userSide.pokes[1] = testMon
 field.opponentSide.pokes[0] = testMon
+field.opponentSide.pokes[1] = annihilape
 attacker = field.userSide.pokes[0]
 attackerSide = 'user'
 defender = field.opponentSide.pokes[0]
 defenderSide = 'opponent'
 move = attacker.moves[1]
 testResult = result()
-testResult = damageCalc.damageCalc(attacker, attackerSide, defender, defenderSide, move, field, testResult)
+testResult = damageCalc.damageCalc(attacker, attackerSide, defender, defenderSide, move, field, 'opponent', testResult)
 print(testResult.opponentDamage)

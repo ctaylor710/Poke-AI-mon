@@ -19,36 +19,50 @@ database.addTypes()
 database.addSpecies()
 database.addNatures()
 
-def damageCalc(attacker, attackerSide, defender, defenderSide, move, field, result):
+def damageCalc(attacker, attackerSide, defender, defenderSide, move, field, target, result):
 
 	ally = 0
 	defender2 = 0
 
-	if attackerSide == 'user':
+	if attackerSide == 'user' and defenderSide != 'user':
 		attackerSide = field.userSide
 		defenderSide = field.opponentSide
 		ally = [mon for mon in field.userSide.pokes if mon.name != attacker.name][0]
 		defender2 = [mon for mon in field.opponentSide.pokes if mon.name != defender.name][0]
-	else:
+	elif attackerSide != 'user' and defenderSide == 'user':
 		attackerSide = field.opponentSide
 		defenderSide = field.userSide
 		ally = [mon for mon in field.opponentSide.pokes if mon.name != attacker.name][0]
 		defender2 = [mon for mon in field.userSide.pokes if mon.name != defender.name][0]
+	elif attackerSide == 'user' and defenderSide == 'user':
+		attackerSide = field.userSide
+		defenderSide = field.userSide
+		ally = defender
+		defender2 = attacker
+	elif attackerSide != 'user' and 'defenderSide' != 'user':
+		attackerSide = field.opponentSide
+		defenderSide = field.opponentSide
+		ally = defender
+		defender2 = attacker
 
 	if(attacker.isSwitching == 'in'):
 		attacker = utils.checkSeedBoost(attacker, field)
-		attacker, ally = utils.switchInChanges(attacker, ally, defender, defender2)
+		attacker, ally = utils.switchInChanges(attacker, ally, defender, defender2, attackerSide)
 		defender = utils.checkIntimidate(attacker, defender)
 		attacker.isSwitching = 'None'
 	if(defender.isSwitching == 'in'):
 		defender = utils.checkSeedBoost(defender, field)
-		defender, defender2 = utils.switchInChanges(defender, defender2, attacker, ally)
+		defender, defender2 = utils.switchInChanges(defender, defender2, attacker, ally, defenderSide)
 		attacker = utils.checkIntimidate(defender, attacker)
 		defender.isSwitching = 'None'
 
 	attacker.stats = utils.computeFinalStats(attacker, field, attackerSide)
+	ally.stats = utils.computeFinalStats(ally, field, attackerSide)
 	defender.stats = utils.computeFinalStats(defender, field, defenderSide)
+	defender2.stats = utils.computeFinalStats(defender2, field, defenderSide)
 
+	turnOrder = [(attacker,attacker.stats['sp']), (ally,ally.stats['sp']), (defender,defender.stats['sp']), (defender2,defender2.stats['sp'])]
+	turnOrder.sort(key = lambda x: x[1], reverse=True)
 
 	attackerSide = utils.checkInfiltrator(attackerSide)
 	defenderSide = utils.checkInfiltrator(defenderSide)
@@ -525,6 +539,8 @@ def calculateFinalMods(attacker, attackerSide, defender, defenderSide, move, fie
 	return finalMods
 
 def applyStatusMoves(attacker, attackerSide, defender, defenderSide, move, field, result):
+
+	# Section: stat changes to attacker or defender only
 	if move.name == 'Belly Drum':
 		result.selfStatChanges.append(('at', +12, 101))
 		result.selfDamage = round(attacker.currHP/2)
@@ -544,9 +560,6 @@ def applyStatusMoves(attacker, attackerSide, defender, defenderSide, move, field
 
 	if move.name in ['Charm', 'Feather Dance']:
 		result.opponentStatChanges.append(('at', -2, 100))
-
-	if move.name == 'Helping Hand':
-		attackerSide.isHelpingHand = True
 
 	if move.name in ['Cotton Guard']:
 		result.selfStatChanges.append(('df', +3, 101))
@@ -604,6 +617,67 @@ def applyStatusMoves(attacker, attackerSide, defender, defenderSide, move, field
 
 	if move.name in ['Scary Face']:
 		result.opponentStatChanges.append(('sp', -2, 100))
+
+	# Section: stat changes for double battles
+	if move.name == 'Aurora Veil':
+		result.attackerSide.isAuroraVeil = True
+
+	if move.name == 'Reflect':
+		result.attackerSide.isReflect = True
+
+	if move.name == 'Light Screen':
+		result.attackerSide.isLightScreen = True
+
+	if move.name == 'Defog':
+		result.defenderSide.isReflect = False
+		result.defenderSide.isLightScreen = False
+
+	if move.name == 'Electric Terrain':
+		result.field.terrain == 'Electric'
+
+	if move.name == 'Psychic Terrain':
+		result.field.terrain = 'Psychic'
+
+	if move.name == 'Grassy Terrain':
+		result.field.terrain = 'Grassy'
+
+	if move.name == 'Misty Terrain':
+		result.field.terrain = 'Misty'
+
+	if move.name == 'Encore':
+		result.defender.isEncored = True
+
+	if move.name == 'Follow Me':
+		result.attacker.isFollowMe = True
+
+	if move.name == 'Gravity':
+		result.field.isGravity = True
+
+	if move.name == 'Haze':
+		for stat in attacker.stats.keys():
+			result.attackerSide.pokes[0].boosts[stat] = 0
+			result.attackerSide.pokes[1].boosts[stat] = 0
+			result.defenderSide.pokes[0].boosts[stat] = 0
+			result.attackerSide.pokes[1].boosts[stat] = 0
+
+	if move.name == 'Helping Hand':
+		attackerSide.isHelpingHand = True
+
+	if move.name == 'Trick Room':
+		result.turnOrder.sort(key = lambda x: x[1])
+
+
+	# Section: protecting moves
+	if move.name in ['Protect', 'Detect']:
+		result.attackerSide.isProtected = True
+
+	if move.name == 'Wide Guard':
+		result.attackerSide.isWideGuard = True
+
+	if move.name == 'Quick Guard':
+		result.attackerSide.isQuickGuard = True
+
+
 
 
 

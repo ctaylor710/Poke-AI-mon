@@ -1,0 +1,70 @@
+Flutter Mane @ Choice Specs  
+Ability: Protosynthesis  
+Level: 50  
+Tera Type: Grass  
+EVs: 84 HP / 100 Def / 116 SpA / 4 SpD / 204 Spe  
+Modest Nature  
+IVs: 0 Atk  
+- Moonblast  
+- Shadow Ball  
+- Dazzling Gleam  
+- Energy Ball  
+
+Kingambit @ Assault Vest  
+Ability: Defiant  
+Level: 50  
+Shiny: Yes  
+Tera Type: Flying  
+EVs: 220 HP / 220 Atk / 4 Def / 60 SpD / 4 Spe  
+Adamant Nature  
+- Iron Head  
+- Assurance  
+- Low Kick  
+- Sucker Punch  
+
+Iron Bundle @ Booster Energy  
+Ability: Quark Drive  
+Level: 50  
+Tera Type: Ghost  
+EVs: 252 SpA / 4 SpD / 252 Spe  
+Timid Nature  
+IVs: 0 Atk  
+- Freeze-Dry  
+- Icy Wind  
+- Hydro Pump  
+- Protect  
+
+Arcanine @ Sitrus Berry  
+Ability: Intimidate  
+Level: 50  
+Tera Type: Water  
+EVs: 116 HP / 44 Atk / 44 Def / 108 SpD / 196 Spe  
+Jolly Nature  
+- Flare Blitz  
+- Snarl  
+- Will-O-Wisp  
+- Protect  
+
+Great Tusk @ Focus Sash  
+Ability: Protosynthesis  
+Level: 50  
+Tera Type: Ground  
+EVs: 4 HP / 252 Atk / 252 Spe  
+Jolly Nature  
+- Headlong Rush  
+- Close Combat  
+- Earthquake  
+- Protect  
+
+Corviknight @ Safety Goggles  
+Ability: Mirror Armor  
+Level: 50  
+Shiny: Yes  
+Tera Type: Dragon  
+EVs: 148 HP / 108 Atk / 124 Def / 68 SpD / 60 Spe  
+Careful Nature  
+- Brave Bird  
+- Bulk Up  
+- Roost  
+- Tailwind  
+

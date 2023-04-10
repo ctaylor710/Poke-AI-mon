@@ -15,6 +15,8 @@ class result:
 		self.selfDamage = 0
 		self.opponentStatChanges = [] # each item should be a tuple of the form ('stat name', #stages, % chance)
 		self.selfStatChanges = []
+		self.allyStatChanges = []
+		self.opponent2StatChanges = []
 		self.flinch = 0 # value from 0 to 100 representing flinch chance
 		self.traps = False
 		self.burn = 0
@@ -25,4 +27,5 @@ class result:
 		self.sleep = 0
 		self.confusion = 0
 		self.preventsSound = 0
+		self.turnOrder = []
 

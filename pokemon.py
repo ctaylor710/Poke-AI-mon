@@ -37,6 +37,9 @@ class pokemon:
 		self.currHP = 0
 		self.alliesFainted = 0
 		self.isSwitching = 'in' # None, in, out. We initialize each pokemon to 'in' for some checks that need to happen at beginnings of battles as well as when pokemon are switched in
+		self.isEncored = False
+		self.lastMove = move()
+		self.isFollowMe = False
 
 
 	def addData(self, database):
@@ -46,8 +49,10 @@ class pokemon:
 			line = line.strip()
 			if len(line) > 0:
 				words = line.split(' ')
-				if words[0] in database.speciesDict.keys():
-					self.name = database.speciesDict[words[0]]
+				pokeName = line.split('@')
+				pokeName[0].strip()
+				if pokeName[0] in database.speciesDict.keys():
+					self.name = database.speciesDict[pokeName[0]]
 					startIndex = line.find('@')
 					if startIndex != -1:
 						self.item = line[startIndex+1:].strip()
@@ -106,6 +111,72 @@ class pokemon:
 					self.level) / 100) + 5) * self.natureBoosts[stat])
 
 		self.rawStats = self.stats.copy()
+
+	def addDataLine(self, database, line):
+		line = line.strip()
+		if len(line) > 0:
+			words = line.split(' ')
+			if words[0] in database.speciesDict.keys():
+				self.name = database.speciesDict[words[0]]
+				startIndex = line.find('@')
+				if startIndex != -1:
+					self.item = line[startIndex+1:].strip()
+			if words[0] == 'Ability:':
+				startIndex = line.find(':')
+				self.ability = line[startIndex+1:].strip()
+			if words[0] == 'Tera':
+				startIndex = line.find(':')
+				self.tera = line[startIndex+1:].strip()
+			if words[0] == 'EVs:':
+				hp = -1; at = -1; df = -1; sa = -1; sd = -1; sp = -1
+				if 'HP' in words:
+					hp = words.index('HP')
+				if 'Atk' in words:
+					at = words.index('Atk')
+				if 'Def' in words:
+					df = words.index('Def')
+				if 'SpA' in words:
+					sa = words.index('SpA')
+				if 'SpD' in words:
+					sd = words.index('SpD')
+				if 'Spe' in words:
+					sp = words.index('Spe')
+				if hp != -1:
+					self.EVs['hp'] = int(words[hp-1])
+				if at != -1:
+					self.EVs['at'] = int(words[at-1])
+				if df != -1:
+					self.EVs['df'] = int(words[df-1])
+				if sa != -1:
+					self.EVs['sa'] = int(words[sa-1])
+				if sd != -1:
+					self.EVs['sd'] = int(words[sd-1])
+				if sp != -1:
+					self.EVs['sp'] = int(words[sp-1])
+			if words[0] in database.naturesDict.keys():
+				self.nature = database.naturesDict[words[0]]
+				self.natureBoosts[self.nature.boost] = 1.1
+				self.natureBoosts[self.nature.lower] = 0.9
+			if words[0] == '-':
+				startIndex = 1
+				if line[startIndex:].strip() in database.movesDict.keys():
+					self.moves.append(database.movesDict[line[startIndex:].strip()])
+				else:
+					tempMove = move()
+					move.name = line[startIndex:].strip()
+					self.moves.append(tempMove)
+				
+		for stat in self.name.bs.keys():
+			if stat == 'hp':
+				self.stats[stat] = math.floor( ( math.floor( ((2*self.name.bs[stat] + self.IVs[stat] + math.floor(self.EVs[stat]/4)) * \
+					self.level) / 100) ) + self.level + 10)
+				self.currHP = self.stats[stat]
+			else:
+				self.stats[stat] = math.floor( ( math.floor( ((2*self.name.bs[stat] + self.IVs[stat] + math.floor(self.EVs[stat]/4)) * \
+					self.level) / 100) + 5) * self.natureBoosts[stat])
+
+		self.rawStats = self.stats.copy()
+
 	def addBoosts(self, stat, amount):
 		if amount > 0:
 			self.boosts[stat] = min(self.boosts[stat] + amount, +6)
@@ -117,3 +188,5 @@ class pokemon:
 		str+=f'Nature: {self.nature.name}\nMoves: {self.moves[0].name}, {self.moves[1].name}, {self.moves[2].name}, {self.moves[3].name}'
 
 		return str
+
+

@@ -186,4 +186,6 @@ def switchInChanges(switchedMon, ally, otherSideMon, otherSideMon2, side):
 	if switchedMon.ability == 'Wind Rider' and side.tailwind:
 		switchedMon.boosts['at'] += 1
 
+	return switchedMon, ally
+
 
