@@ -1,0 +1,10 @@
+Armarouge @ Assault Vest  
+Ability: Flash Fire  
+Tera Type: Fire  
+EVs: 252 SpA / 252 SpD / 4 Spe  
+Modest Nature  
+IVs: 0 Atk  
+- Armor Cannon  
+- Aura Sphere  
+- Calm Mind  
+- Clear Smog

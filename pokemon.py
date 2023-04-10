@@ -36,6 +36,7 @@ class pokemon:
 		self.ignoresScreens = False
 		self.currHP = 0
 		self.alliesFainted = 0
+		self.isSwitching = 'in' # None, in, out. We initialize each pokemon to 'in' for some checks that need to happen at beginnings of battles as well as when pokemon are switched in
 
 
 	def addData(self, database):
@@ -88,7 +89,13 @@ class pokemon:
 					self.natureBoosts[self.nature.lower] = 0.9
 				if words[0] == '-':
 					startIndex = 1
-					self.moves.append(database.movesDict[line[startIndex:].strip()])
+					if line[startIndex:].strip() in database.movesDict.keys():
+						self.moves.append(database.movesDict[line[startIndex:].strip()])
+					else:
+						tempMove = move()
+						move.name = line[startIndex:].strip()
+						self.moves.append(tempMove)
+					
 		for stat in self.name.bs.keys():
 			if stat == 'hp':
 				self.stats[stat] = math.floor( ( math.floor( ((2*self.name.bs[stat] + self.IVs[stat] + math.floor(self.EVs[stat]/4)) * \

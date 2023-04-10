@@ -22,7 +22,7 @@ class database:
 		self.naturesDict = {}
 
 	def addMoves(self):
-		movesFile = open("database/moves.txt", "r")
+		movesFile = open("database/moves.txt", "r", encoding='utf8')
 		for line in movesFile:
 			line = line.strip()
 			if len(line) > 0:
@@ -44,7 +44,7 @@ class database:
 		movesFile.close()
 
 	def addTypes(self):
-		typesFile = open("database/types.txt", "r")
+		typesFile = open("database/types.txt", "r", encoding='utf8')
 		for line in typesFile:
 			line = line.strip()
 			if len(line) > 0:
@@ -65,7 +65,7 @@ class database:
 		typesFile.close()
 
 	def addSpecies(self):
-		speciesFile = open("database/species.txt", "r")
+		speciesFile = open("database/species.txt", "r", encoding='utf8')
 		for line in speciesFile:
 			line = line.strip()
 			if len(line) > 0:
@@ -87,7 +87,7 @@ class database:
 		speciesFile.close()
 
 	def addNatures(self):
-		naturesFile = open("database/natures.txt", "r")
+		naturesFile = open("database/natures.txt", "r", encoding='utf8')
 		for line in naturesFile:
 			line = line.strip()
 			if(len(line) > 0):

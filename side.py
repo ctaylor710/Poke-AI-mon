@@ -15,4 +15,3 @@ class side:
 		self.isForesight = False
 		self.isHelpingHand = False
 		self.isFriendGuard = False
-		self.isSwitching = 'None' # None, in, out

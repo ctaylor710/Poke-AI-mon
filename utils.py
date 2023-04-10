@@ -21,7 +21,7 @@ def getModifiedStat(stat, number):
 
 def getFinalSpeed(pokemon, field, sideName):
 
-	speed = getModifiedStat(pokemon.stats['sp'], pokemon.boosts['sp'])
+	speed = getModifiedStat(pokemon.rawStats['sp'], pokemon.boosts['sp'])
 	speedMods = []
 	side = field.userSide
 	if sideName == 'opponent':
@@ -66,7 +66,7 @@ def computeFinalStats(pokemon, field, sideName):
 		if stat == 'sp':
 			pokemon.stats['sp'] = getFinalSpeed(pokemon, field, sideName)
 		else:
-			pokemon.stats[stat] = getModifiedStat(pokemon.stats[stat], pokemon.boosts[stat])
+			pokemon.stats[stat] = getModifiedStat(pokemon.rawStats[stat], pokemon.boosts[stat])
 	return pokemon.stats
 
 def effectiveness(attackingType, defendingTypes):
@@ -177,3 +177,13 @@ def handleFixedDamageMoves(pokemon, move):
 		return 20
 	else:
 		return -1
+
+def switchInChanges(switchedMon, ally, otherSideMon, otherSideMon2, side):
+	if switchedMon.ability == 'Commander' and ally.name.name == 'Dondozo':
+		ally.boosts['at'] += 2; ally.boosts['df']; ally.boosts['sa']; ally.boosts['sd']; ally.boosts['sp']
+	if switchedMon.ability == 'Costar':
+		switchedMon.boosts = ally.boosts
+	if switchedMon.ability == 'Wind Rider' and side.tailwind:
+		switchedMon.boosts['at'] += 1
+
+

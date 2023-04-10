@@ -10,6 +10,7 @@ of the unknown state values are.
 """
 from database.database import database
 from pokemon import pokemon
+from result import result
 import utils
 
 database = database()
@@ -18,34 +19,51 @@ database.addTypes()
 database.addSpecies()
 database.addNatures()
 
-def damageCalc(attacker, attackerSide, defender, defenderSide, move, field):
+def damageCalc(attacker, attackerSide, defender, defenderSide, move, field, result):
 
-	print(attacker.boosts)
-	print(defender.boosts)
-	attacker = utils.checkSeedBoost(attacker, field)
-	defender = utils.checkSeedBoost(defender, field)
-	attacker = utils.checkIntimidate(defender, attacker)
-	defender = utils.checkIntimidate(attacker, defender)
-
-	attacker.stats = utils.computeFinalStats(attacker, field, attackerSide)
-	defender.stats = utils.computeFinalStats(defender, field, defenderSide)
+	ally = 0
+	defender2 = 0
 
 	if attackerSide == 'user':
 		attackerSide = field.userSide
 		defenderSide = field.opponentSide
+		ally = [mon for mon in field.userSide.pokes if mon.name != attacker.name][0]
+		defender2 = [mon for mon in field.opponentSide.pokes if mon.name != defender.name][0]
 	else:
 		attackerSide = field.opponentSide
 		defenderSide = field.userSide
+		ally = [mon for mon in field.opponentSide.pokes if mon.name != attacker.name][0]
+		defender2 = [mon for mon in field.userSide.pokes if mon.name != defender.name][0]
+
+	if(attacker.isSwitching == 'in'):
+		attacker = utils.checkSeedBoost(attacker, field)
+		attacker, ally = utils.switchInChanges(attacker, ally, defender, defender2)
+		defender = utils.checkIntimidate(attacker, defender)
+		attacker.isSwitching = 'None'
+	if(defender.isSwitching == 'in'):
+		defender = utils.checkSeedBoost(defender, field)
+		defender, defender2 = utils.switchInChanges(defender, defender2, attacker, ally)
+		attacker = utils.checkIntimidate(defender, attacker)
+		defender.isSwitching = 'None'
+
+	attacker.stats = utils.computeFinalStats(attacker, field, attackerSide)
+	defender.stats = utils.computeFinalStats(defender, field, defenderSide)
+
 
 	attackerSide = utils.checkInfiltrator(attackerSide)
 	defenderSide = utils.checkInfiltrator(defenderSide)
 
-	result = [0, 0] # [Damage dealt to opponent, damage dealt to self]
-	print(attacker.boosts)
-	print(defender.boosts)
+	if defender.ability == 'Commander' and defender2.name.name == 'Dondozo':
+		return result
 
 	if move.category == 'Status' and move.name != 'Nature Power':
+		result = applyStatusMoves(attacker, attackerSide, ally, defender, defenderSide, defender2, move, field, result)
 		return result
+	
+	if move.secondaries and attacker.ability != 'Sheer Force':
+		result = calculateSecondaries(result)
+
+	# result = applyStatDrops(attacker, attackerSide, defender, defenderSide, move, field, result)
 
 	if defenderSide.isProtected and ~move.breaksProtect:
 		return result
@@ -146,6 +164,14 @@ def damageCalc(attacker, attackerSide, defender, defenderSide, move, field):
 
 	if move.name == 'Final Gambit':
 		result = [attacker.currHP, attacker.currHP]
+		damage = 0
+		if result.attackerSide.pokes[0].name != attacker.name:
+			damage = attackerSide.pokes[1].currHP
+		else:
+			damage = attackerSide.pokes[0].currHP
+
+		result.opponentDamage = damage
+		result.selfDamage = damage
 		return result
 
 	basePower = calculateBasePower(attacker, attackerSide, defender, defenderSide, move, field, hasAteAbilityTypeChange)
@@ -207,7 +233,7 @@ def damageCalc(attacker, attackerSide, defender, defenderSide, move, field):
 	for i in range(16):
 		damage.append(utils.getFinalDamage(baseDamage, i, typeEffectiveness, applyBurn, stabMod, finalMod, protect))
 
-	result = damage
+	result.opponentDamage = damage
 
 	return result
 
@@ -219,7 +245,7 @@ def calculateBasePower(attacker, attackerSide, defender, defenderSide, move, fie
 	if move.name == 'Payback':
 		basePower = move.bp * (2 if turnOrder == 'last' else 1)
 	elif move.name == 'Pursuit':
-		switching = defenderSIde.isSwitching == 'out'
+		switching = defender.isSwitching == 'out'
 		basePower = move.bp * (2 if switching else 1)
 	elif move.name == 'Electro Ball':
 		r = math.floor(attacker.stats['sp']/defender.stats['sp'])
@@ -319,7 +345,7 @@ def calculateBPMods(attacker, attackerSide, defender, defenderSide, move, field,
 
 	if(attacker.ability == 'Sheer Force' and (move.secondaries or (move.name == 'Jet Punch' or move.name == 'Order Up'))) or \
 		(attacker.ability == 'Sand Force' and field.weather == 'Sand' and (move.type == 'Rock' or move.type == 'Ground' or move.type == 'Steel')) or \
-		(attacker.ability == 'Analytic' and (turnOrder != 'first' or defenderSide.isSwitching == 'out')) or \
+		(attacker.ability == 'Analytic' and (turnOrder != 'first' or defender.isSwitching == 'out')) or \
 		(attacker.ability == 'Tough Claws' and move.makesContact) or \
 		(attacker.ability == 'Punk Rock' and move.isSound):
 		bpMods.append(1.3)
@@ -497,3 +523,105 @@ def calculateFinalMods(attacker, attackerSide, defender, defenderSide, move, fie
 		finalMods.append(1.3)
 
 	return finalMods
+
+def applyStatusMoves(attacker, attackerSide, defender, defenderSide, move, field, result):
+	if move.name == 'Belly Drum':
+		result.selfStatChanges.append(('at', +12, 101))
+		result.selfDamage = round(attacker.currHP/2)
+
+	if move.name in ['Shell Smash', 'Swords Dance']:
+		result.selfStatChanges.append(('at', +2, 101))
+
+	if move.name in ['Bulk Up', 'Coil', 'Dragon Dance', 'Growth', 'Hone Claws', 'Howl', 'Meditate', 'Sharpen', 'Shift Gear', 'Work Up']:
+		result.selfStatChanges.append(('at', +1, 101))
+
+	if move.name in ['Growl', 'Noble Roar', 'Play Nice', 'Tearful Look', 'Tickle']:
+		result.opponentStatChanges.append(('at', -1, 100))
+
+	if move.name == 'Baby-Doll Eyes' and field.terrain != 'Psychic':
+		result.opponentStatChanges.append(('at', -1, 100))
+		move.priority = 1
+
+	if move.name in ['Charm', 'Feather Dance']:
+		result.opponentStatChanges.append(('at', -2, 100))
+
+	if move.name == 'Helping Hand':
+		attackerSide.isHelpingHand = True
+
+	if move.name in ['Cotton Guard']:
+		result.selfStatChanges.append(('df', +3, 101))
+
+	if (move.name in ['Acid Armor', 'Barrier', 'Iron Defense']) or (move.name == 'Stuff Cheeks' and attacker.item.find('Berry') != -1):
+		result.selfStatChanges.append(('df', +2, 101))
+		if move.name == 'Stuff Cheeks':
+			attacker.item = 'None'
+
+	if move.name in ['Bulk Up', 'Coil', 'Cosmic Power', 'Defense Order', 'Defense Curl', 'Harden', 'Stockpile', 'Withdraw']:
+		result.selfStatChanges.append(('df', +1, 101))
+
+	if move.name in ['Screech']:
+		result.opponentStatChanges.append(('df', -2, 85))
+
+	if move.name in ['Leer', 'Shell Smash', 'Tail Whip', 'Tickle']:
+		result.opponentStatChanges.append(('df', -1, 100))
+
+	if move.name in ['Shell Smash']:
+		result.selfStatChanges.append(('df', -1, 101))
+
+	if move.name in ['Nasty Plot', 'Shell Smash']:
+		result.selfStatChanges.append(('sa', +2, 101))
+
+	if move.name in ['Calm Mind', 'Growth', 'Quiver Dance', 'Work Up']:
+		result.selfStatChanges.append(('sa', +1, 101))
+
+	if move.name in ['Confide', 'Noble Roar', 'Tearful Look']:
+		result.opponentStatChanges.append(('sa', -1, 101))
+
+	if move.name in ['Captivate', 'Eerie Impulse']:
+		result.opponentStatChanges.append(('sa', -2, 100))
+
+	if move.name in ['Amnesia']:
+		result.selfStatChanges.append(('sd', +2, 101))
+
+	if move.name in ['Calm Mind', 'Charge', 'Cosmic Power', 'Defend Order', 'Quiver Dance', 'Stockpile']:
+		result.selfStatChanges.append(('sd', +1, 101))
+
+	if move.name in ['Shell Smash']:
+		result.selfStatChanges.append(('sd', -1, 101))
+
+	if move.name in ['Fake Tears', 'Metal Sound']:
+		result.opponentStatChanges.append(('sd', -2, 100))
+
+	if move.name in ['Agility', 'Autotomize', 'Rock Polish', 'Shell Smash', 'Shift Gear']:
+		result.selfStatChanges.append(('sp', +2, 101))
+
+	if move.name in ['Dragon Dance', 'Quiver Dance']:
+		result.selfStatChanges.append(('sp', +1, 101))
+
+	if move.name in ['Cotton Spore', 'String shot']:
+		result.opponentStatChanges.append(('sp', -2, 100))
+		# other opponent lowers
+
+	if move.name in ['Scary Face']:
+		result.opponentStatChanges.append(('sp', -2, 100))
+
+
+
+	result.attacker = attacker
+	result.attackerSide = attackerSide
+	result.defender = defender
+	result.defenderSide = defenderSide
+	result.field = field
+
+
+	return result
+
+
+
+
+
+def calculateSecondaries(move, result):
+	return 0
+
+
+
