@@ -669,8 +669,11 @@ def applyStatusMoves(attacker, attackerSide, defender, defenderSide, move, field
 		result.poison = 20
 	if move.name in ['Gunk Shot','Poison Jab','Poison Sting','Sludge','Sludge Bomb']:
 		result.poison = 30
-	if move.name in ['Smog']:
+	if move.name == 'Smog':
 		result.poison = 40
+	### Bad Poison/toxic
+	if move.name == 'Poison Fang':
+		result.toxic = 50
 	### Sleep:
 	if move.name in ['Relic Song']:
 		result.sleep = 10
