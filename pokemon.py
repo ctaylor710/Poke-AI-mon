@@ -12,6 +12,7 @@ from database.moves import move
 from database.pokeTypes import pokeType
 from database.species import species
 from database.natures import nature
+from database.statistics import statistics
 import math
 
 class pokemon:
