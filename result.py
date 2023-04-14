@@ -11,8 +11,11 @@ class result:
 		self.attackerSide = side()
 		self.defenderSide = side()
 		self.field = field()
-		self.opponentDamage = []
+		self.opponentDamage = [0] * 16
+		self.opponent2Damage = [0] * 16
+		self.allyDamage = [0] * 16
 		self.selfDamage = 0
+		self.target = []
 		self.opponentStatChanges = [] # each item should be a tuple of the form ('stat name', #stages, % chance)
 		self.selfStatChanges = []
 		self.allyStatChanges = []

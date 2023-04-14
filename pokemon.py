@@ -24,7 +24,7 @@ class pokemon:
 		self.isTera = False
 		self.EVs = {'hp':0, 'at':0, 'df':0, 'sa':0, 'sd':0, 'sp':0}
 		self.IVs = {'hp':31, 'at':31, 'df':31, 'sa':31, 'sd':31, 'sp':31}
-		self.level = 100
+		self.level = 50
 		self.nature = nature()
 		self.moves = []
 		self.stats = self.name.bs
@@ -116,8 +116,10 @@ class pokemon:
 		line = line.strip()
 		if len(line) > 0:
 			words = line.split(' ')
-			if words[0] in database.speciesDict.keys():
-				self.name = database.speciesDict[words[0]]
+			pokeName = line.split('@')
+			pokeName[0] = pokeName[0].strip()
+			if pokeName[0] in database.speciesDict.keys():
+				self.name = database.speciesDict[pokeName[0]]
 				startIndex = line.find('@')
 				if startIndex != -1:
 					self.item = line[startIndex+1:].strip()

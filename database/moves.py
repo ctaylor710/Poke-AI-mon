@@ -14,7 +14,7 @@ class move:
 		self.hasCrashDamage = False
 		self.struggleRecoil = False
 		self.priority = 0
-		self.target = 'Single'
+		self.target = 'Adjacent'
 		self.makesContact = False
 		self.isPunch = False
 		self.boosts = {}
@@ -176,7 +176,7 @@ class move:
 			endIndex = line.find(',', startIndex)
 			if line[endIndex-1] == '}':
 				endIndex -= 1
-			self.type = line[startIndex+1:endIndex].strip().replace('\'', '')
+			self.target = line[startIndex+1:endIndex].strip().replace('\'', '')
 
 		if makesContact != -1:
 			self.makesContact = False if self.makesContact else True

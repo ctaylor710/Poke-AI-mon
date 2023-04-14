@@ -15,9 +15,10 @@ database.addMoves()
 database.addTypes()
 database.addSpecies()
 database.addNatures()
-#for moves in database.speciesDict.keys():
-#	if moves == 'Flutter Mane':
-#		print(database.speciesDict[moves])
+for moves in database.movesDict.keys():
+		print(database.movesDict[moves])
+
+
 testTeam = []
 fileName = input('Enter team sheet: ')
 file = open(f'pokemonFiles/{fileName}')
@@ -31,7 +32,6 @@ for line in file:
 			testTeam.append(pokemon())
 			index += 1
 	testTeam[-1].addDataLine(database, line)
-print(testTeam[0], testTeam[1])
 
 annihilape = pokemon()
 testMon = pokemon()
@@ -59,5 +59,5 @@ defender = field.opponentSide.pokes[0]
 defenderSide = 'opponent'
 move = attacker.moves[1]
 testResult = result()
-testResult = damageCalc.damageCalc(attacker, attackerSide, defender, defenderSide, move, field, 'opponent', testResult)
+testResult = damageCalc.DamageCalc(attacker, attackerSide, defender, defenderSide, move, field, 'opponent', testResult)
 print(testResult.opponentDamage)

@@ -19,7 +19,18 @@ database.addTypes()
 database.addSpecies()
 database.addNatures()
 
-def damageCalc(attacker, attackerSide, defender, defenderSide, move, field, target, result):
+def UpdateResult(attacker, ally, attackerSide, defender, defender2, defenderSide, move, field, target, result):
+	attackerSide.pokes[0] = attacker
+	attackerSide.pokes[1] = ally
+	defenderSide.pokes[0] = defender
+	defenderSide.pokes[1] = defender2
+	result.attackerSide = attackerSide
+	result.defenderSide = defenderSide
+	result.field = field
+	result.target = target
+	return result
+
+def DamageCalc(attacker, attackerSide, defender, defenderSide, move, field, target, result):
 
 	ally = 0
 	defender2 = 0
@@ -67,15 +78,17 @@ def damageCalc(attacker, attackerSide, defender, defenderSide, move, field, targ
 	attackerSide = utils.checkInfiltrator(attackerSide)
 	defenderSide = utils.checkInfiltrator(defenderSide)
 
+	#result = UpdateResult(attacker, ally, attackerSide, defender, defender2, defenderSide, move, field, target, result)
+
 	if defender.ability == 'Commander' and defender2.name.name == 'Dondozo':
 		return result
 
 	if move.category == 'Status' and move.name != 'Nature Power':
-		result = applyStatusMoves(attacker, attackerSide, ally, defender, defenderSide, defender2, move, field, result)
+		result = applyStatusMoves(attacker, ally, attackerSide, defender, defender2, defenderSide, move, field, result)
 		return result
 	
-	if move.secondaries and attacker.ability != 'Sheer Force':
-		result = calculateSecondaries(result)
+	#if move.secondaries and attacker.ability != 'Sheer Force':
+	#	result = CalculateSecondaries(result)
 
 	# result = applyStatDrops(attacker, attackerSide, defender, defenderSide, move, field, result)
 
@@ -156,7 +169,7 @@ def damageCalc(attacker, attackerSide, defender, defenderSide, move, field, targ
 		(move.type == 'Fire' and (defender.ability == 'Flash Fire' or defender.ability == 'Well-Baked Body')) or \
 		(move.type == 'Water' and (defender.ability == 'Dry skin' or defender.ability == 'Storm Drain' or defender.ability == 'Water Absorb')) or \
 		(move.type == 'Electric' and (defender.ability == 'Lightning Rod' or defender.ability == 'Motor Drive' or defender.ability == 'Volt Absorb')) or \
-		(move.type == 'Ground' and ~field.isGravity and defender.item != 'Iron Ball' and defender.ability == 'Levitate') or \
+		(move.type == 'Ground' and ~field.gravity and defender.item != 'Iron Ball' and defender.ability == 'Levitate') or \
 		(move.isBullet and defender.ability == 'Bulletproof') or \
 		(move.isSound and defender.ability == 'Soundproof') or \
 		(move.priority > 0 and (defender.ability == 'Dazzling' or defender.ability == 'Armor Tail')) or \
@@ -164,7 +177,7 @@ def damageCalc(attacker, attackerSide, defender, defenderSide, move, field, targ
 		(move.isWind and defender.ability == 'Wind Rider'):
 		return result
 
-	if move.type == 'Ground' and ~field.isGravity and defender.item == 'Air Balloon':
+	if move.type == 'Ground' and ~field.gravity and defender.item == 'Air Balloon':
 		return result
 
 	if move.priority > 0 and field.terrain == 'Psychic' and utils.isGrounded(defender, field):
@@ -188,18 +201,18 @@ def damageCalc(attacker, attackerSide, defender, defenderSide, move, field, targ
 		result.selfDamage = damage
 		return result
 
-	basePower = calculateBasePower(attacker, attackerSide, defender, defenderSide, move, field, hasAteAbilityTypeChange)
+	basePower = CalculateBasePower(attacker, attackerSide, defender, defenderSide, move, field, hasAteAbilityTypeChange)
 
 	if move.bp == 0:
 		return result
 
-	attack = calculateAttack(attacker, attackerSide, defender, defenderSide, move, field, isCritical)
+	attack = CalculateAttack(attacker, attackerSide, defender, defenderSide, move, field, isCritical)
 	attackSource = defender if move.name == 'Foul Play' else attacker
 	if move.name == 'Tera Blast' and attackSource.isTera:
 		move.category = 'Physical' if attackSource.stats['at'] > attackSource.stats['sa'] else 'Special'
 	attackStat = 'df' if move.name == 'Body Press' else ('sa' if move.category == 'Special' else 'at')
 
-	defense = calculateDefense(attacker, attackerSide, defender, defenderSide, move, field, isCritical)
+	defense = CalculateDefense(attacker, attackerSide, defender, defenderSide, move, field, isCritical)
 	hitsPhysical = move.overrideDefensiveStat == 'def' or move.category == 'Physical'
 	defenseStat = 'df' if hitsPhysical else 'sd'
 
@@ -235,7 +248,7 @@ def damageCalc(attacker, attackerSide, defender, defenderSide, move, field, targ
 
 	applyBurn = attacker.status == 'Burn' and move.category == 'Physical' and ~attacker.ability == 'Guts' and ~move.name == 'Facade'
 
-	finalMods = calculateFinalMods(attacker, attackerSide, defender, defenderSide, move, field, isCritical, typeEffectiveness)
+	finalMods = CalculateFinalMods(attacker, attackerSide, defender, defenderSide, move, field, isCritical, typeEffectiveness)
 
 	protect = False
 	if defenderSide.isProtected:
@@ -247,11 +260,15 @@ def damageCalc(attacker, attackerSide, defender, defenderSide, move, field, targ
 	for i in range(16):
 		damage.append(utils.getFinalDamage(baseDamage, i, typeEffectiveness, applyBurn, stabMod, finalMod, protect))
 
-	result.opponentDamage = damage
+	if len(target) == 1:
+		if target[0] % 2 == 1:
+			result.opponentDamage = damage
+		else:
+			result.opponent2Damage = damage
 
 	return result
 
-def calculateBasePower(attacker, attackerSide, defender, defenderSide, move, field, hasAteAbilityTypeChange):
+def CalculateBasePower(attacker, attackerSide, defender, defenderSide, move, field, hasAteAbilityTypeChange):
 	turnOrder = 'first' if attacker.stats['sp'] > defender.stats['sp'] else 'last'
 
 	basePower = 0
@@ -275,7 +292,7 @@ def calculateBasePower(attacker, attackerSide, defender, defenderSide, move, fie
 	elif move.name == 'Punishment':
 		basePower = min(200, 60 + 20*utils.countBoosts(defender.boosts))
 	elif move.name == 'Low Kick' or move.name == 'Grass Knot':
-		w = defender.weightkg * utils.getWeightFactor(defender)
+		w = defender.name.weightkg * utils.getWeightFactor(defender)
 		basePower = 120 if w >= 200 else (100 if w >= 100 else (80 if w >= 50 else (60 if w >= 25 else (40 if w >= 10 else 20))))
 	elif move.name == 'Hex' or move.name == 'Infernal Parade':
 		basePower = move.bp * (2 if defender.status != 'Healthy' or defender.ability == 'Comatose' else 1)
@@ -305,12 +322,12 @@ def calculateBasePower(attacker, attackerSide, defender, defenderSide, move, fie
 	if basePower == 0:
 		return 0
 
-	bpMods = calculateBPMods(attacker, attackerSide, defender, defenderSide, move, field, basePower, hasAteAbilityTypeChange, turnOrder)
+	bpMods = CalculateBPMods(attacker, attackerSide, defender, defenderSide, move, field, basePower, hasAteAbilityTypeChange, turnOrder)
 	basePower = max(1, basePower*utils.chainMods(bpMods))
 
 	return basePower
 
-def calculateBPMods(attacker, attackerSide, defender, defenderSide, move, field, basePower, hasAteAbilityTypeChange, turnOrder):
+def CalculateBPMods(attacker, attackerSide, defender, defenderSide, move, field, basePower, hasAteAbilityTypeChange, turnOrder):
 	bpMods = []
 
 	resistedKnockOffDamage = defender.item == 'None'
@@ -323,7 +340,7 @@ def calculateBPMods(attacker, attackerSide, defender, defenderSide, move, field,
 		move.target = 'allAdjacentFoes'
 		bpMods.append(1.5)
 	elif (move.name == 'Knock Off' and ~resistedKnockOffDamage) or \
-		(move.name == 'Grav Apple' and field.isGravity):
+		(move.name == 'Grav Apple' and field.gravity):
 		bpMods.append(1.5)
 	elif (move.name == 'Solar Beam' or move.name == 'Solar Blade') and \
 		(field.weather == 'Rain' or field.weather == 'Sand' or field.weather == 'Snow'):
@@ -395,7 +412,7 @@ def calculateBPMods(attacker, attackerSide, defender, defenderSide, move, field,
 
 	return bpMods
 
-def calculateAttack(attacker, attackerSide, defender, defenderSide, move, field, isCritical):
+def CalculateAttack(attacker, attackerSide, defender, defenderSide, move, field, isCritical):
 	attackSource = defender if move.name == 'Foul Play' else attacker
 	if move.name == 'Tera Blast' and attackSource.isTera:
 		move.category = 'Physical' if attackSource.stats['at'] > attackSource.stats['sa'] else 'Special'
@@ -411,12 +428,12 @@ def calculateAttack(attacker, attackerSide, defender, defenderSide, move, field,
 	if attacker.ability == 'Hustle' and move.category == 'Physical':
 		attack = round(attack*1.5)
 
-	atMods = calculateAtMods(attacker, attackerSide, defender, defenderSide, move, field)
+	atMods = CalculateAtMods(attacker, attackerSide, defender, defenderSide, move, field)
 	attack = round(attack*utils.chainMods(atMods))
 
 	return attack
 
-def calculateAtMods(attacker, attackerSide, defender, defenderSide, move, field):
+def CalculateAtMods(attacker, attackerSide, defender, defenderSide, move, field):
 	atMods = []
 
 	if (attacker.ability == 'Solar Power' and field.weather == 'Sun' and move.category == 'Special'):
@@ -463,7 +480,7 @@ def calculateAtMods(attacker, attackerSide, defender, defenderSide, move, field)
 
 	return atMods
 
-def calculateDefense(attacker, attackerSide, defender, defenderSide, move, field, isCritical):
+def CalculateDefense(attacker, attackerSide, defender, defenderSide, move, field, isCritical):
 	defense = 0
 
 	hitsPhysical = move.overrideDefensiveStat == 'df' or move.category == 'Physical'
@@ -482,11 +499,11 @@ def calculateDefense(attacker, attackerSide, defender, defenderSide, move, field
 	if field.weather == 'Snow' and defender.type == 'Ice' and hitsPhysical:
 		defense = round(defense*1.5)
 
-	dfMods = calculateDfMods(attacker, attackerSide, defender, defenderSide, move, field, isCritical, hitsPhysical)
+	dfMods = CalculateDfMods(attacker, attackerSide, defender, defenderSide, move, field, isCritical, hitsPhysical)
 
 	return max(1, round(defense*utils.chainMods(dfMods)))
 
-def calculateDfMods(attacker, attackerSide, defender, defenderSide, move, field, isCritical, hitsPhysical):
+def CalculateDfMods(attacker, attackerSide, defender, defenderSide, move, field, isCritical, hitsPhysical):
 	dfMods = []
 
 	if defender.ability == 'Marvel Scale' and defender.status != 'Healthy' and hitsPhysical:
@@ -505,7 +522,7 @@ def calculateDfMods(attacker, attackerSide, defender, defenderSide, move, field,
 	if (defender.ability == 'Protosynthesis' and (field.weather == 'Sun' or defender.item == 'Booster Energy')) or \
 		(defender.ability == 'Quark Drive' and (field.terrain == 'Electric' or defender.item == 'Booster Energy')):
 		if (hitsPhysical and utils.highestStat(defender) == 'df') or \
-			(~hitsPhyiscal and utils.highestStat(defender) == 'sd'):
+			(~hitsPhysical and utils.highestStat(defender) == 'sd'):
 			dfMods.append(1.3)
 
 	if (defender.item == 'Eviolite' and defender.name.nfe) or \
@@ -514,7 +531,7 @@ def calculateDfMods(attacker, attackerSide, defender, defenderSide, move, field,
 
 	return dfMods
 
-def calculateFinalMods(attacker, attackerSide, defender, defenderSide, move, field, isCritical, typeEffectiveness):
+def CalculateFinalMods(attacker, attackerSide, defender, defenderSide, move, field, isCritical, typeEffectiveness):
 	finalMods = []
 
 	if defenderSide.isReflect and move.category == 'Physical' and ~isCritical and ~defenderSide.isAuroraVeil:
@@ -530,7 +547,7 @@ def calculateFinalMods(attacker, attackerSide, defender, defenderSide, move, fie
 	if defender.ability == 'Multiscale' and defender.currHP == defender.stats['hp'] and defender.currHP == defender.stats['hp']:
 		finalMods.append(0.5)
 
-	if defenderSide.isFriendGuard:
+	if defenderSide.friendGuard:
 		finalMods.append(0.75)
 
 	if attacker.item == 'Life Orb':
@@ -538,7 +555,10 @@ def calculateFinalMods(attacker, attackerSide, defender, defenderSide, move, fie
 
 	return finalMods
 
-def applyStatusMoves(attacker, attackerSide, defender, defenderSide, move, field, result):
+def applyStatusMoves(attacker, ally, attackerSide, defender, defender2, defenderSide, move, field, result):
+
+	if attacker.ability == 'Prankster':
+		move.priority = 1
 
 	# Section: stat changes to attacker or defender only
 	if move.name == 'Belly Drum':
@@ -651,7 +671,7 @@ def applyStatusMoves(attacker, attackerSide, defender, defenderSide, move, field
 		result.attacker.isFollowMe = True
 
 	if move.name == 'Gravity':
-		result.field.isGravity = True
+		result.field.gravity = True
 
 	if move.name == 'Haze':
 		for stat in attacker.stats.keys():
@@ -664,8 +684,8 @@ def applyStatusMoves(attacker, attackerSide, defender, defenderSide, move, field
 		attackerSide.isHelpingHand = True
 
 	if move.name == 'Trick Room':
+		field.trickRoom = True
 		result.turnOrder.sort(key = lambda x: x[1])
-
 
 	# Section: protecting moves
 	if move.name in ['Protect', 'Detect']:
@@ -677,25 +697,52 @@ def applyStatusMoves(attacker, attackerSide, defender, defenderSide, move, field
 	if move.name == 'Quick Guard':
 		result.attackerSide.isQuickGuard = True
 
-
-
-
-
 	result.attacker = attacker
 	result.attackerSide = attackerSide
 	result.defender = defender
 	result.defenderSide = defenderSide
 	result.field = field
 
-
 	return result
 
 
-
-
-
-def calculateSecondaries(move, result):
+def CalculateSecondaries(move, result):
 	return 0
 
+# This function captures the dynamics of our environment. The dynamics are a mix of deterministic and stochastic results;
+# most damage moves deal damage within a range of numbers, while status moves always have fixed effects. That being said,
+# the stochastic dynamics of the environment can be treated as deterministic by looking at 'best-case', 'average', and 'worst-case'
+# scenarios (these scenarios are deterministic depending on the action being taken, and so there is never doubt in what defines each scenario)
+def TakeMove(attacker, attackerSide, defender, defenderSide, move, field, target):
+	ally = 0
+	defender2 = 0
+	myResult = result()
+	if attackerSide == 'user' and defenderSide != 'user':
+		ally = [mon for mon in field.userSide.pokes if mon.name != attacker.name][0]
+		defender2 = [mon for mon in field.opponentSide.pokes if mon.name != defender.name][0]
+	elif attackerSide != 'user' and defenderSide == 'user':
+		ally = [mon for mon in field.opponentSide.pokes if mon.name != attacker.name][0]
+		defender2 = [mon for mon in field.userSide.pokes if mon.name != defender.name][0]
+	elif attackerSide == 'user' and defenderSide == 'user':
+		ally = defender
+		defender2 = attacker
+	elif attackerSide != 'user' and 'defenderSide' != 'user':
+		ally = defender
+		defender2 = attacker
+	if move == 'Switch':
+		attacker.isSwitching = 'out'
+		defender.isSwitching = 'in'
+		myResult.attacker = attacker
+		myResult.defender = defender
+		return myResult
+	if (attacker.item.find('Choice') != -1 and move != attacker.lastMove and attacker.lastMove.name != 'None') or \
+		(attacker.item == 'Assault Vest' and move.category == 'Status'):
+		return myResult
+	print('target', target)
+	print('move', move.name)
+	myResult = DamageCalc(attacker, attackerSide, defender, defenderSide, move, field, target, myResult)
+	print('opp1', myResult.opponentDamage)
+	print('opp2', myResult.opponent2Damage)
+	return myResult
 
 

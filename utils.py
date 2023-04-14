@@ -41,7 +41,7 @@ def getFinalSpeed(pokemon, field, sideName):
 	elif pokemon.ability == 'Slow Start' and pokemon.abilityOn:
 		speedMods.append(0.5)
 	elif highestStat(pokemon) == 'sp' and ((pokemon.ability == 'Protosynthesis' and (field.weather == 'Sun' or pokemon.item == 'Booster Energy')) or \
-		(pokemon.ability == 'Quark Drive' and (terrain == 'Electric' or pokemon.item == 'Booster Energy'))):
+		(pokemon.ability == 'Quark Drive' and (field.terrain == 'Electric' or pokemon.item == 'Booster Energy'))):
 		speedMods.append(1.5)
 
 	if pokemon.item == 'Choice Scarf':
