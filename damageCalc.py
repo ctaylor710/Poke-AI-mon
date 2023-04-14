@@ -18,6 +18,7 @@ database.addMoves()
 database.addTypes()
 database.addSpecies()
 database.addNatures()
+database.addStat()
 
 def UpdateResult(attacker, ally, attackerSide, defender, defender2, defenderSide, move, field, target, result):
 	attackerSide.pokes[0] = attacker
@@ -637,6 +638,175 @@ def applyStatusMoves(attacker, ally, attackerSide, defender, defender2, defender
 
 	if move.name in ['Scary Face']:
 		result.opponentStatChanges.append(('sp', -2, 100))
+
+	# Section: Secondary Effect
+	### Flinch:
+	if move.name in ['Bone Club','Extrasensory','Hyper Fang']:
+		result.flinch = 10
+	if move.name in ['Dark Pulse','Dragon Rush','Fiery Wrath','Twister','Waterfall','Zen Headbutt']:
+		result.flinch = 20
+	if move.name in ['Air Slash','Astonish','Bite','Double Iron Bash','Floaty Fall','Headbutt','Heart Stamp','Icicle Crash','Iron Head',\
+		  'Needle Arm','Rock Slide','Rolling Kick','Sky Attack','Snore','Steamroller','Stomp','Zing Zap']:
+		result.flinch = 30
+	if move.name in ['Fake Out']:
+		result.flinch = 100
+	### Burn:
+	if move.name in ['Blaze Kick','Ember','Fire Blast','Fire Punch','Flame Wheel','Flamethrower','Flare Blitz','Heat Wave','Ice Burn','Pyro Ball']:
+		result.burn = 10
+	if move.name in ['Blue Flare']:
+		result.burn = 20
+	if move.name in ['Lava Plume','Scald','Scorching Sands','Searing Shot','Steam Eruption']:
+		result.burn = 30
+	if move.name in ['Sacred Fire']:
+		result.burn = 50
+	if move.name in ['Inferno','Sizzly Slide']:
+		result.burn = 100
+	### Freeze:
+	if move.name in ['Blizzard','Freeze-Dry','Freezing Glare','Ice Beam','Ice Punch','Powder Snow']:
+		result.freeze = 10
+	### Paralysis
+	if move.name in ['Thunder Punch','Thunder Shock','Thunderbolt','Volt Tackle']:
+		result.paralysis = 10
+	if move.name in ['Bolt Strike']:
+		result.paralysis = 20
+	if move.name in ['Body Slam','Bounce','Discharge','Dragon Breath','Force Palm','Freeze Shock','Lick','Spark','Splishy Splash','Thunder']:
+		result.paralysis = 30
+	if move.name in ['Buzzy Buzz','Nuzzle','Stoked Sparksurfer','Zap Cannon']:
+		result.paralysis = 100
+	### Confusion
+	if move.name in ['Confusion','Psybeam','Signal Beam']:
+		result.confusion = 10
+	if move.name in ['Dizzy Punch','Rock Climb','Strange Steam','Water Pulse']:
+		result.confusion = 20
+	if move.name in ['Hurricane']:
+		result.confusion = 30
+	if move.name in ['Chatter','Dynamic Punch']:
+		result.confusion = 100
+	### Poison
+	if move.name in ['Cross Poison','Poison Tail','Sludge Wave']:
+		result.poison = 10
+	if move.name in ['Shell Side Arm','Twineedle']:
+		result.poison = 20
+	if move.name in ['Gunk Shot','Poison Jab','Poison Sting','Sludge','Sludge Bomb']:
+		result.poison = 30
+	if move.name == 'Smog':
+		result.poison = 40
+	### Bad Poison/toxic
+	if move.name == 'Poison Fang':
+		result.toxic = 50
+	### Sleep:
+	if move.name in ['Relic Song']:
+		result.sleep = 10
+	### Prevent Sound:
+	if move.name in ['Throat Chop']:
+		result.sleep = 100
+	### Double Effect
+	if move.name == 'Fire Fang':
+		result.flinch = 10
+		result.burn = 10
+	if move.name == 'Ice Fang':
+		result.flinch = 10
+		result.freeze = 10
+	if move.name == 'Thunder Fang':
+		result.flinch = 10
+		result.paralysis = 10
+	### Triple Effect
+	if move.name == 'Tri Attack':
+		result.burn = 6.67
+		result.freeze = 6.67
+		result.paralysis = 6.67
+	
+	### Trap:
+	if move.name in ['Anchor Shot','Spirit Shackle']:
+		result.traps = True
+
+	### Lowering attack:
+	if move.name in ['Aurora Beam','Play Rough']:
+		result.opponentStatChanges.append(('at', -1, 10))
+	if move.name in ['Breaking Swipe','Lunge','Trop Kick']:
+		result.opponentStatChanges.append(('at', -1, 100))
+	### Lowering defense:
+	if move.name in ['Iron Tail']:
+		result.opponentStatChanges.append(('df', -1, 10))
+	if move.name in ['Crunch','Liquidation','Shadow Bone']:
+		result.opponentStatChanges.append(('df', -1, 20))
+	if move.name in ['Crush Claw','Razor Shell','Rock Smash']:
+		result.opponentStatChanges.append(('df', -1, 50))
+	if move.name in ['Fire Lash','Grav Apple','Thunderous Kick']:
+		result.opponentStatChanges.append(('df', -1, 100))
+	### Lowering SA:
+	if move.name in ['Moonblast']:
+		result.opponentStatChanges.append(('sa', -1, 30))	
+	if move.name in ['Mist Ball']:
+		result.opponentStatChanges.append(('sa', -1, 50))
+	if move.name in ['Mystical Fire','Skitter Smack','Snarl','Spirit Break','Struggle Bug']:
+		result.opponentStatChanges.append(('sa', -1, 100))
+	### Lowering SD:
+	if move.name in ['Acid','Bug Buzz','Earth Power','Energy Ball','Flash Cannon','Focus Blast','Psychic']:
+		result.opponentStatChanges.append(('sd', -1, 10))
+	if move.name == 'Shadow Ball':
+		result.opponentStatChanges.append(('sd', -1, 20))
+	if move.name == 'Luster Purge':
+		result.opponentStatChanges.append(('sd', -1, 50))
+	if move.name == 'Apple Acid':
+		result.opponentStatChanges.append(('sd', -1, 100))
+	if move.name == 'Seed Flare':
+		result.opponentStatChanges.append(('sd', -2, 40))
+	if move.name == 'Acid Spray':
+		result.opponentStatChanges.append(('sd', -2, 100))
+	### Lowering speed:
+	if move.name in ['Bubble','Bubble Beam','Constrict']:
+		result.opponentStatChanges.append(('sp', -1, 10))
+	if move.name in ['Bulldoze','Drum Beating','Electroweb','Glaciate','Icy Wind','Low Sweep','Mud Shot','Rock Tomb']:
+		result.opponentStatChanges.append(('sp', -1, 100))
+
+	### Buff AT:
+	if move.name in ['Metal Claw']:
+		result.selfStatChanges.append(('at', +1, 10))
+	if move.name in ['Meteor Mash']:
+		result.selfStatChanges.append(('at', +1, 20))
+	if move.name in ['Meteor Mash','Power-Up Punch']:
+		result.selfStatChanges.append(('at', +1, 100))
+	### Buff DF:
+	if move.name in ['Steel Wing']:
+		result.selfStatChanges.append(('df', +1, 10))
+	if move.name in ['Diamond Storm']:
+		result.selfStatChanges.append(('df', +2, 50))
+	### Buff SA:
+	if move.name in ['Fiery Dancez']:
+		result.selfStatChanges.append(('sa', +1, 50))
+	if move.name in ['Charge Beam']:
+		result.selfStatChanges.append(('sa', +1, 70))
+	### Buff SP:
+	if move.name in ['Aura Wheel','Flame Charge']:
+		result.selfStatChanges.append(('sp', +1, 100))
+
+	### Buff all:
+	if move.name in ['Ancient Power','Ominous Wind','Silver Wind']:
+		result.selfStatChanges.append(('at', +1, 10))
+		result.selfStatChanges.append(('df', +1, 10))
+		result.selfStatChanges.append(('sa', +1, 10))
+		result.selfStatChanges.append(('sd', +1, 10))
+		result.selfStatChanges.append(('sp', +1, 10))
+	if move.name == 'Clangorous Soulblaze':
+		result.selfStatChanges.append(('at', +1, 100))
+		result.selfStatChanges.append(('df', +1, 100))
+		result.selfStatChanges.append(('sa', +1, 100))
+		result.selfStatChanges.append(('sd', +1, 100))
+		result.selfStatChanges.append(('sp', +1, 100))
+
+	### Change Terrain:
+	if move.name == 'Genesis Supernova':
+		result.field.terrain = 'Psychic'
+
+
+	
+	
+	
+	
+						
+
+
 
 	# Section: stat changes for double battles
 	if move.name == 'Aurora Veil':

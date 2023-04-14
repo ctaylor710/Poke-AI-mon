@@ -11,6 +11,7 @@ from database.moves import move
 from database.pokeTypes import pokeType
 from database.species import species
 from database.natures import nature
+from database.statistics import statistics
 
 class database:
 
@@ -20,9 +21,10 @@ class database:
 		self.typesDict = {}
 		self.speciesDict = {}
 		self.naturesDict = {}
+		self.statsDict = {}
 
 	def addMoves(self):
-		movesFile = open("database/moves.txt", "r", encoding='utf8')
+		movesFile = open("database/moves.txt", "r")
 		for line in movesFile:
 			line = line.strip()
 			if len(line) > 0:
@@ -44,7 +46,7 @@ class database:
 		movesFile.close()
 
 	def addTypes(self):
-		typesFile = open("database/types.txt", "r", encoding='utf8')
+		typesFile = open("database/types.txt", "r")
 		for line in typesFile:
 			line = line.strip()
 			if len(line) > 0:
@@ -65,7 +67,7 @@ class database:
 		typesFile.close()
 
 	def addSpecies(self):
-		speciesFile = open("database/species.txt", "r", encoding='utf8')
+		speciesFile = open("database/species.txt", "r",encoding="utf8")
 		for line in speciesFile:
 			line = line.strip()
 			if len(line) > 0:
@@ -87,7 +89,7 @@ class database:
 		speciesFile.close()
 
 	def addNatures(self):
-		naturesFile = open("database/natures.txt", "r", encoding='utf8')
+		naturesFile = open("database/natures.txt", "r")
 		for line in naturesFile:
 			line = line.strip()
 			if(len(line) > 0):
@@ -97,3 +99,34 @@ class database:
 				newNature.addData(line)
 				self.naturesDict[newNature.name] = newNature
 		naturesFile.close()
+	
+	def addStat(self):
+		nameList = list(self.speciesDict.keys())
+		nameFlag = False # set the name flag to True so it can extract the first pokemon's data
+		statFile = open('database/statistics.txt','r',encoding='utf8')
+		# Read the data from the file
+		newStates = statistics()
+		for line in statFile:
+			line = line.strip()
+			# print(line)
+			if any(name in line for name in nameList) and '%' not in line:
+				nameFlag = True
+			else:
+				nameFlag = False
+			# print(line,'     ',nameFlag)
+			if len(line) > 0:
+				if nameFlag == True:
+					newStates = statistics()
+					newStates.addData(line)	
+					startIndex = line.find('|')
+					endIndex = line.find('+')
+					tempLine = line[startIndex+1:endIndex].strip()
+					newStates.name = tempLine
+					# print(newStates)
+				else:
+					newStates.addData(line)
+				self.statsDict[newStates.name ] = newStates
+		statFile.close
+
+		
+
