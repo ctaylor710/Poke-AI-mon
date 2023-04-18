@@ -41,6 +41,7 @@ class pokemon:
 		self.isEncored = False
 		self.lastMove = move()
 		self.isFollowMe = False
+		self.isProtected = False
 
 
 	def addData(self, database):

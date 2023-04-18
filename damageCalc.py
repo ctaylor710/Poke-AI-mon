@@ -93,7 +93,7 @@ def DamageCalc(attacker, attackerSide, defender, defenderSide, move, field, targ
 
 	# result = applyStatDrops(attacker, attackerSide, defender, defenderSide, move, field, result)
 
-	if defenderSide.isProtected and ~move.breaksProtect:
+	if defender.isProtected and ~move.breaksProtect:
 		return result
 
 	defenderIgnoresAbility = defender.ability == 'Full Metal Body' or defender.ability == 'Neutralizing Gas'
@@ -252,7 +252,7 @@ def DamageCalc(attacker, attackerSide, defender, defenderSide, move, field, targ
 	finalMods = CalculateFinalMods(attacker, attackerSide, defender, defenderSide, move, field, isCritical, typeEffectiveness)
 
 	protect = False
-	if defenderSide.isProtected:
+	if defender.isProtected:
 		protect = True
 
 	finalMod = utils.chainMods(finalMods)
@@ -634,11 +634,102 @@ def applyStatusMoves(attacker, ally, attackerSide, defender, defender2, defender
 
 	if move.name in ['Cotton Spore', 'String shot']:
 		result.opponentStatChanges.append(('sp', -2, 100))
-		# other opponent lowers
+		result.opponent2StatChanges.append(('sp', -2, 100))
 
 	if move.name in ['Scary Face']:
 		result.opponentStatChanges.append(('sp', -2, 100))
 
+	# Section: Status changes
+	if move.name == 'Confuse Ray':
+		result.confusion = 100
+
+	if move.name == 'Dark Void':
+		result.sleep = 50
+
+	if move.name == 'Thunder Wave':
+		result.paralysis = 90
+
+	# Section: side/field changes for double battles
+	if move.name == 'Aurora Veil':
+		result.attackerSide.isAuroraVeil = True
+
+	if move.name == 'Reflect':
+		result.attackerSide.isReflect = True
+
+	if move.name == 'Light Screen':
+		result.attackerSide.isLightScreen = True
+
+	if move.name == 'Defog':
+		result.defenderSide.isReflect = False
+		result.defenderSide.isLightScreen = False
+
+	if move.name == 'Snowscape':
+		result.field.weather == 'Snow'
+
+	if move.name == 'Rain Dance':
+		result.field.weather == 'Rain'
+
+	if move.name == 'Sandstorm':
+		result.field.weather == 'Sand'
+
+	if move.name == 'Sunny Day':
+		result.field.weather == 'Sun'
+
+	if move.name == 'Electric Terrain':
+		result.field.terrain == 'Electric'
+
+	if move.name == 'Psychic Terrain':
+		result.field.terrain = 'Psychic'
+
+	if move.name == 'Grassy Terrain':
+		result.field.terrain = 'Grassy'
+
+	if move.name == 'Misty Terrain':
+		result.field.terrain = 'Misty'
+
+	if move.name == 'Encore':
+		result.defender.isEncored = True
+
+	if move.name == 'Follow Me':
+		result.attacker.isFollowMe = True
+
+	if move.name == 'Gravity':
+		result.field.gravity = True
+
+	if move.name == 'Haze':
+		for stat in attacker.stats.keys():
+			result.attackerSide.pokes[0].boosts[stat] = 0
+			result.attackerSide.pokes[1].boosts[stat] = 0
+			result.defenderSide.pokes[0].boosts[stat] = 0
+			result.attackerSide.pokes[1].boosts[stat] = 0
+
+	if move.name == 'Helping Hand':
+		attackerSide.isHelpingHand = True
+
+	if move.name == 'Trick Room':
+		field.trickRoom = True
+		result.turnOrder.sort(key = lambda x: x[1])
+
+	# Section: protecting moves
+	if move.name in ['Protect', 'Detect']:
+		result.attacker.isProtected = True
+
+	if move.name == 'Wide Guard':
+		result.attackerSide.isWideGuard = True
+
+	if move.name == 'Quick Guard':
+		result.attackerSide.isQuickGuard = True
+
+	result.attacker = attacker
+	result.attackerSide = attackerSide
+	result.defender = defender
+	result.defenderSide = defenderSide
+	result.field = field
+
+	return result
+
+
+def CalculateSecondaries(move, result):
 	# Section: Secondary Effect
 	### Flinch:
 	if move.name in ['Bone Club','Extrasensory','Hyper Fang']:
@@ -799,74 +890,6 @@ def applyStatusMoves(attacker, ally, attackerSide, defender, defender2, defender
 	if move.name == 'Genesis Supernova':
 		result.field.terrain = 'Psychic'
 
-
-	
-	
-	
-	
-						
-
-
-
-	# Section: stat changes for double battles
-	if move.name == 'Aurora Veil':
-		result.attackerSide.isAuroraVeil = True
-
-	if move.name == 'Reflect':
-		result.attackerSide.isReflect = True
-
-	if move.name == 'Light Screen':
-		result.attackerSide.isLightScreen = True
-
-	if move.name == 'Defog':
-		result.defenderSide.isReflect = False
-		result.defenderSide.isLightScreen = False
-
-	if move.name == 'Electric Terrain':
-		result.field.terrain == 'Electric'
-
-	if move.name == 'Psychic Terrain':
-		result.field.terrain = 'Psychic'
-
-	if move.name == 'Grassy Terrain':
-		result.field.terrain = 'Grassy'
-
-	if move.name == 'Misty Terrain':
-		result.field.terrain = 'Misty'
-
-	if move.name == 'Encore':
-		result.defender.isEncored = True
-
-	if move.name == 'Follow Me':
-		result.attacker.isFollowMe = True
-
-	if move.name == 'Gravity':
-		result.field.gravity = True
-
-	if move.name == 'Haze':
-		for stat in attacker.stats.keys():
-			result.attackerSide.pokes[0].boosts[stat] = 0
-			result.attackerSide.pokes[1].boosts[stat] = 0
-			result.defenderSide.pokes[0].boosts[stat] = 0
-			result.attackerSide.pokes[1].boosts[stat] = 0
-
-	if move.name == 'Helping Hand':
-		attackerSide.isHelpingHand = True
-
-	if move.name == 'Trick Room':
-		field.trickRoom = True
-		result.turnOrder.sort(key = lambda x: x[1])
-
-	# Section: protecting moves
-	if move.name in ['Protect', 'Detect']:
-		result.attackerSide.isProtected = True
-
-	if move.name == 'Wide Guard':
-		result.attackerSide.isWideGuard = True
-
-	if move.name == 'Quick Guard':
-		result.attackerSide.isQuickGuard = True
-
 	result.attacker = attacker
 	result.attackerSide = attackerSide
 	result.defender = defender
@@ -874,10 +897,6 @@ def applyStatusMoves(attacker, ally, attackerSide, defender, defender2, defender
 	result.field = field
 
 	return result
-
-
-def CalculateSecondaries(move, result):
-	return 0
 
 # This function captures the dynamics of our environment. The dynamics are a mix of deterministic and stochastic results;
 # most damage moves deal damage within a range of numbers, while status moves always have fixed effects. That being said,
@@ -908,11 +927,11 @@ def TakeMove(attacker, attackerSide, defender, defenderSide, move, field, target
 	if (attacker.item.find('Choice') != -1 and move != attacker.lastMove and attacker.lastMove.name != 'None') or \
 		(attacker.item == 'Assault Vest' and move.category == 'Status'):
 		return myResult
-	print('target', target)
-	print('move', move.name)
+	#print('target', target)
+	#print('move', move.name)
 	myResult = DamageCalc(attacker, attackerSide, defender, defenderSide, move, field, target, myResult)
-	print('opp1', myResult.opponentDamage)
-	print('opp2', myResult.opponent2Damage)
+	#print('opp1', myResult.opponentDamage)
+	#print('opp2', myResult.opponent2Damage)
 	return myResult
 
 

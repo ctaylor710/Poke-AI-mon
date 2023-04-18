@@ -217,6 +217,8 @@ def EmbedPokeInfo(pokemon):
 
 	pokeVec.append(pokemon.isFollowMe)
 
+	pokeVec.append(pokemon.isProtected)
+
 	return pokeVec
 
 def EmbedFieldInfo(field):
@@ -288,11 +290,54 @@ def StateVector(field, userPokes, opponentPokes):
 # We then pass in the quantitative results of taking that move. Note that this is different from dynamics: the action is the damage, healing, etc. that results from taking that
 # move, and the dynamics is adding these quantitative results to the current state and updating it
 def actionVector(result):
+	actionVec = []
+
+	actionVec.append(result.target)
+
+	actionVec.append(EmbedFieldInfo(result.field))
+
+	if result.attackerSide.side == 'user':
+		actionVec.append(EmbedSideInfo(result.attackerSide))
+		actionVec.append(EmbedSideInfo(result.defenderSide))
+		actionVec.append(result.selfDamage)
+		actionVec.append(result.allyDamage)
+		actionVec.append(result.opponentDamage)
+		actionVec.append(result.opponent2Damage)
+		actionVec.append(result.selfStatChanges)
+		actionVec.append(result.allyStatChanges)
+		actionVec.append(result.opponentStatChanges)
+		actionVec.append(result.opponent2StatChanges)
+	else:
+		actionVec.append(EmbedSideInfo(result.defenderSide))
+		actionVec.append(EmbedSideInfo(result.attackerSide))
+		actionVec.append(result.opponentDamage)
+		actionVec.append(result.opponent2Damage)
+		actionVec.append(result.selfDamage)
+		actionVec.append(result.selfDamage)
+		actionVec.append(result.opponentStatChanges)
+		actionVec.append(result.opponent2StatChanges)
+		actionVec.append(result.selfStatChanges)
+		actionVec.append(result.allyStatChanges)
+
+	actionVec.append(result.flinch)
+	actionVec.append(result.traps)
+	actionVec.append(result.burn)
+	actionVec.append(result.freeze)
+	actionVec.append(result.paralysis)
+	actionVec.append(result.poison)
+	actionVec.append(result.toxic)
+	actionVec.append(result.sleep)
+	actionVec.append(result.confusion)
+	actionVec.append(result.preventsSound)
+
+	return actionVec
+
 
 def TakeAction(field, pokes, moves, targets, availablePokes):
 	actionVec = []
 
-	turnOrder = [[pokes[0],moves[0],pokes[0].stats['sp']], [pokes[1],moves[1],pokes[1].stats['sp']], [pokes[2],moves[2],pokes[2].stats['sp']], [pokes[3],moves[3],pokes[3].stats['sp']]]
+	turnOrder = [[pokes[0],moves[0],pokes[0].stats['sp'], targets[0], 'user'], [pokes[1],moves[1],pokes[1].stats['sp'], targets[1], 'user'], \
+		[pokes[2],moves[2],pokes[2].stats['sp'], targets[2], 'opponent'], [pokes[3],moves[3],pokes[3].stats['sp'], targets[3], 'opponent']]
 	# First, the turn order is sorted by if any pokemon are switching (pursuit not accounted for, only losers use pursuit)
 	switches = []
 	for i in range(len(turnOrder)):
@@ -309,11 +354,26 @@ def TakeAction(field, pokes, moves, targets, availablePokes):
 	# We update our turn order based on the 3 separate sorts we performed
 	turnOrder = switches + nonSwitches
 
+	print(turnOrder[0][0].name.name, turnOrder[0][1].name, turnOrder[1][0].name.name, turnOrder[1][1].name, turnOrder[2][0].name.name, turnOrder[2][1].name, turnOrder[3][0].name.name, turnOrder[3][1].name)
 	# Next, we sequentially take the actions
 	for i in range(len(turnOrder)):
-		result = damageCalc.TakeMove(turnOrder[i][0], attackerSide, defender, defenderSide, turnOrder[i][1], field, target) # This changes our move inputs into something that
-																															# can be expressed quantitatively
+		attackerSide = turnOrder[i][4]
+		target = turnOrder[i][3]
+		for t in target:
+			if target[0] == 0: # switching flag
+				result = 0  # TODO: add switching capabilities to action space
+			elif(t/4 <= 1): # 1 <= target <= 4
+				if t == 1 or t == 2:
+					defenderSide = 'user'
+				else:
+					defenderSide = 'opponent'
+				defender = pokes[t-1]
+				print(f'move {i+1}: {attackerSide}\'s {turnOrder[i][0].name.name} uses {turnOrder[i][1].name} against {defenderSide}\'s {defender.name.name}')
+				result = damageCalc.TakeMove(turnOrder[i][0], attackerSide, defender, defenderSide, turnOrder[i][1], field, target)
+				result.target.append(t)
 		actionVec.append(actionVector(result))
+
+	return actionVec
 
 # bubblesort for remaining ties, needed to be done manually to also check for levels of priority
 def SpeedSort(turns, trickRoom=False):
@@ -460,8 +520,8 @@ def demonstration():
 		targets.append(target)
 
 	action = TakeAction(myField, pokes, moves, targets, availablePokes)
-	#print(action)
-	return state
+	print(action)
+	return state, action
 
 
 file = open('DemonstrationData.txt', 'a')
