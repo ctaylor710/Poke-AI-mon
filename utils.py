@@ -178,7 +178,7 @@ def handleFixedDamageMoves(pokemon, move):
 	else:
 		return -1
 
-def switchInChanges(switchedMon, ally, otherSideMon, otherSideMon2, side):
+def switchInChanges(switchedMon, ally, otherSideMon, otherSideMon2, side, field):
 	if switchedMon.ability == 'Commander' and ally.name.name == 'Dondozo':
 		ally.boosts['at'] += 2; ally.boosts['df']; ally.boosts['sa']; ally.boosts['sd']; ally.boosts['sp']
 	if switchedMon.ability == 'Costar':
@@ -186,6 +186,6 @@ def switchInChanges(switchedMon, ally, otherSideMon, otherSideMon2, side):
 	if switchedMon.ability == 'Wind Rider' and side.tailwind:
 		switchedMon.boosts['at'] += 1
 
-	return switchedMon, ally
+	return switchedMon, ally, field
 
 

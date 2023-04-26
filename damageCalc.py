@@ -20,76 +20,90 @@ database.addSpecies()
 database.addNatures()
 database.addStat()
 
-def UpdateResult(attacker, ally, attackerSide, defender, defender2, defenderSide, move, field, target, result):
-	attackerSide.pokes[0] = attacker
-	attackerSide.pokes[1] = ally
-	defenderSide.pokes[0] = defender
-	defenderSide.pokes[1] = defender2
-	result.attackerSide = attackerSide
-	result.defenderSide = defenderSide
+def UpdateResult(attacker, ally, attackerSide, defender, defender2, defenderSide, field, result):
+	result.attacker = attacker
+	result.defender = defender
+	result.attackerSide.pokes[0] = attacker if result.attackerSide.pokes[0].name.name == attacker.name.name else ally
+	result.attackerSide.pokes[1] = ally if result.attackerSide.pokes[0].name.name == attacker.name.name else attacker
+	result.attackerSide.side = attackerSide.side
+	result.defenderSide.pokes[0] = defender if result.defenderSide.pokes[0].name.name == defender.name.name else defender2
+	result.defenderSide.pokes[1] = defender2 if result.defenderSide.pokes[0].name.name == defender.name.name else defender
+	result.defenderSide.side = defenderSide.side
 	result.field = field
-	result.target = target
 	return result
 
 def DamageCalc(attacker, attackerSide, defender, defenderSide, move, field, target, result):
 
 	ally = 0
 	defender2 = 0
+	attackerIndex = 0
+	defenderIndex = 0
 
-	if attackerSide == 'user' and defenderSide != 'user':
+	# print('move:', move)
+	if move == 'switch' and attackerSide == 'user':
 		attackerSide = field.userSide
 		defenderSide = field.opponentSide
-		ally = [mon for mon in field.userSide.pokes if mon.name != attacker.name][0]
-		defender2 = [mon for mon in field.opponentSide.pokes if mon.name != defender.name][0]
+		allyIndex = [i for i in range(len(field.userSide.pokes)) if field.userSide.pokes[i].name == attacker.name][0]
+		ally = field.userSide.pokes[-1*allyIndex+1]
+		defender = field.opponentSide.pokes[0]
+		defender2 = field.opponentSide.pokes[1]
+	elif attackerSide == 'user' and defenderSide != 'user':
+		attackerSide = field.userSide
+		defenderSide = field.opponentSide
+		attackerIndex = [i for i in range(len(field.userSide.pokes)) if field.userSide.pokes[i].name == attacker.name][0]
+		ally = field.userSide.pokes[-1*attackerIndex+1]
+		defenderIndex = [i for i in range(len(field.opponentSide.pokes)) if field.opponentSide.pokes[i].name == defender.name][0]
+		defender2 = field.opponentSide.pokes[-1*defenderIndex+1]
 	elif attackerSide != 'user' and defenderSide == 'user':
 		attackerSide = field.opponentSide
 		defenderSide = field.userSide
-		ally = [mon for mon in field.opponentSide.pokes if mon.name != attacker.name][0]
-		defender2 = [mon for mon in field.userSide.pokes if mon.name != defender.name][0]
+		attackerIndex = [i for i in range(len(field.opponentSide.pokes)) if field.opponentSide.pokes[i].name == attacker.name][0]
+		ally = field.opponentSide.pokes[-1*attackerIndex+1]
+		defenderIndex = [i for i in range(len(field.userSide.pokes)) if field.userSide.pokes[i].name == defender.name][0]
+		defender2 = field.userSide.pokes[-1*defenderIndex+1]
 	elif attackerSide == 'user' and defenderSide == 'user':
 		attackerSide = field.userSide
 		defenderSide = field.userSide
-		ally = defender
-		defender2 = attacker
-	elif attackerSide != 'user' and 'defenderSide' != 'user':
+		attackerIndex = [i for i in range(len(field.userSide.pokes)) if field.userSide.pokes[i].name == attacker.name][0]
+		ally = field.userSide.pokes[-1*attackerIndex+1]
+		defenderIndex = [i for i in range(len(field.userSide.pokes)) if field.userSide.pokes[i].name == defender.name][0]
+		defender2 = field.userSide.pokes[-1*defenderIndex+1]
+	elif attackerSide != 'user' and defenderSide != 'user':
 		attackerSide = field.opponentSide
 		defenderSide = field.opponentSide
-		ally = defender
-		defender2 = attacker
+		attackerIndex = [i for i in range(len(field.opponentSide.pokes)) if field.opponentSide.pokes[i].name == attacker.name][0]
+		ally = field.opponentSide.pokes[-1*attackerIndex+1]
+		defenderIndex = [i for i in range(len(field.opponentSide.pokes)) if field.opponentSide.pokes[i].name == defender.name][0]
+		defender2 = field.opponentSide.pokes[-1*defenderIndex+1]
 
 	if(attacker.isSwitching == 'in'):
 		attacker = utils.checkSeedBoost(attacker, field)
-		attacker, ally = utils.switchInChanges(attacker, ally, defender, defender2, attackerSide)
+		attacker, ally, field = utils.switchInChanges(attacker, ally, defender, defender2, attackerSide, field)
 		defender = utils.checkIntimidate(attacker, defender)
+		defender2 = utils.checkIntimidate(attacker, defender2)
 		attacker.isSwitching = 'None'
-	if(defender.isSwitching == 'in'):
-		defender = utils.checkSeedBoost(defender, field)
-		defender, defender2 = utils.switchInChanges(defender, defender2, attacker, ally, defenderSide)
-		attacker = utils.checkIntimidate(defender, attacker)
-		defender.isSwitching = 'None'
 
 	attacker.stats = utils.computeFinalStats(attacker, field, attackerSide)
 	ally.stats = utils.computeFinalStats(ally, field, attackerSide)
 	defender.stats = utils.computeFinalStats(defender, field, defenderSide)
 	defender2.stats = utils.computeFinalStats(defender2, field, defenderSide)
 
-	turnOrder = [(attacker,attacker.stats['sp']), (ally,ally.stats['sp']), (defender,defender.stats['sp']), (defender2,defender2.stats['sp'])]
-	turnOrder.sort(key = lambda x: x[1], reverse=True)
-
 	attackerSide = utils.checkInfiltrator(attackerSide)
 	defenderSide = utils.checkInfiltrator(defenderSide)
+	result = UpdateResult(attacker, ally, attackerSide, defender, defender2, defenderSide, field, result)
 
-	#result = UpdateResult(attacker, ally, attackerSide, defender, defender2, defenderSide, move, field, target, result)
+	if move == 'switch':
+		return result
 
 	if defender.ability == 'Commander' and defender2.name.name == 'Dondozo':
 		return result
 
 	if move.category == 'Status' and move.name != 'Nature Power':
-		result = applyStatusMoves(attacker, ally, attackerSide, defender, defender2, defenderSide, move, field, result)
+		result = applyStatusMoves(attacker, attackerIndex, ally, attackerSide, defender, defenderIndex, defender2, defenderSide, move, field, result)
 		return result
 	
-	#if move.secondaries and attacker.ability != 'Sheer Force':
-	#	result = CalculateSecondaries(result)
+	if move.secondaries and attacker.ability != 'Sheer Force':
+		result = CalculateSecondaries(attacker, attackerIndex, ally, attackerSide, defender, defenderIndex, defender2, defenderSide, move, field, result)
 
 	# result = applyStatDrops(attacker, attackerSide, defender, defenderSide, move, field, result)
 
@@ -556,7 +570,7 @@ def CalculateFinalMods(attacker, attackerSide, defender, defenderSide, move, fie
 
 	return finalMods
 
-def applyStatusMoves(attacker, ally, attackerSide, defender, defender2, defenderSide, move, field, result):
+def applyStatusMoves(attacker, attackerIndex, ally, attackerSide, defender, defenderIndex, defender2, defenderSide, move, field, result):
 
 	if attacker.ability == 'Prankster':
 		move.priority = 1
@@ -701,7 +715,7 @@ def applyStatusMoves(attacker, ally, attackerSide, defender, defender2, defender
 			result.attackerSide.pokes[0].boosts[stat] = 0
 			result.attackerSide.pokes[1].boosts[stat] = 0
 			result.defenderSide.pokes[0].boosts[stat] = 0
-			result.attackerSide.pokes[1].boosts[stat] = 0
+			result.defenderSide.pokes[1].boosts[stat] = 0
 
 	if move.name == 'Helping Hand':
 		attackerSide.isHelpingHand = True
@@ -712,7 +726,7 @@ def applyStatusMoves(attacker, ally, attackerSide, defender, defender2, defender
 
 	# Section: protecting moves
 	if move.name in ['Protect', 'Detect']:
-		result.attacker.isProtected = True
+		result.protects = True
 
 	if move.name == 'Wide Guard':
 		result.attackerSide.isWideGuard = True
@@ -720,16 +734,34 @@ def applyStatusMoves(attacker, ally, attackerSide, defender, defender2, defender
 	if move.name == 'Quick Guard':
 		result.attackerSide.isQuickGuard = True
 
-	result.attacker = attacker
+	# Section: Healing moves
+	if move.name in ['Heal Order', 'Milk Drink', 'Recover', 'Roost', 'Slack Off', 'Soft-Boiled']:
+		result.selfDamage = -attacker.stats['hp']/2
+
+	if move.name in ['Moonlight', 'Morning Sun', 'Synthesis']:
+		if result.field.weather == 'None':
+			result.selfDamage = -attacker.stats['hp']/2
+		elif result.field.weather == 'Sun':
+			result.selfDamage = -2*attacker.stats['hp']/3
+		else:
+			result.selfDamage = -attacker.stats['hp']/4
+
+	if move.name == 'Rest':
+		result.selfDamage = -attacker.stats['hp']
+		result.attacker.status = 'Sleep'
+
+	attackerSide.pokes[attackerIndex] = attacker
+	attackerSide.pokes[-attackerIndex+1] = ally
 	result.attackerSide = attackerSide
-	result.defender = defender
+	defenderSide.pokes[defenderIndex] = defender
+	defenderSide.pokes[-defenderIndex+1] = defender2
 	result.defenderSide = defenderSide
 	result.field = field
 
 	return result
 
 
-def CalculateSecondaries(move, result):
+def CalculateSecondaries(attacker, attackerIndex, ally, attackerSide, defender, defenderIndex, defender2, defenderSide, move, field, result):
 	# Section: Secondary Effect
 	### Flinch:
 	if move.name in ['Bone Club','Extrasensory','Hyper Fang']:
@@ -864,7 +896,7 @@ def CalculateSecondaries(move, result):
 	if move.name in ['Diamond Storm']:
 		result.selfStatChanges.append(('df', +2, 50))
 	### Buff SA:
-	if move.name in ['Fiery Dancez']:
+	if move.name in ['Fiery Dance']:
 		result.selfStatChanges.append(('sa', +1, 50))
 	if move.name in ['Charge Beam']:
 		result.selfStatChanges.append(('sa', +1, 70))
@@ -890,9 +922,11 @@ def CalculateSecondaries(move, result):
 	if move.name == 'Genesis Supernova':
 		result.field.terrain = 'Psychic'
 
-	result.attacker = attacker
+	attackerSide.pokes[attackerIndex] = attacker
+	attackerSide.pokes[-1*attackerIndex+1] = ally
 	result.attackerSide = attackerSide
-	result.defender = defender
+	defenderSide.pokes[defenderIndex] = defender
+	defenderSide.pokes[-1*defenderIndex+1] = defender2
 	result.defenderSide = defenderSide
 	result.field = field
 
@@ -903,35 +937,40 @@ def CalculateSecondaries(move, result):
 # the stochastic dynamics of the environment can be treated as deterministic by looking at 'best-case', 'average', and 'worst-case'
 # scenarios (these scenarios are deterministic depending on the action being taken, and so there is never doubt in what defines each scenario)
 def TakeMove(attacker, attackerSide, defender, defenderSide, move, field, target):
-	ally = 0
-	defender2 = 0
 	myResult = result()
-	if attackerSide == 'user' and defenderSide != 'user':
-		ally = [mon for mon in field.userSide.pokes if mon.name != attacker.name][0]
-		defender2 = [mon for mon in field.opponentSide.pokes if mon.name != defender.name][0]
-	elif attackerSide != 'user' and defenderSide == 'user':
-		ally = [mon for mon in field.opponentSide.pokes if mon.name != attacker.name][0]
-		defender2 = [mon for mon in field.userSide.pokes if mon.name != defender.name][0]
-	elif attackerSide == 'user' and defenderSide == 'user':
-		ally = defender
-		defender2 = attacker
-	elif attackerSide != 'user' and 'defenderSide' != 'user':
-		ally = defender
-		defender2 = attacker
-	if move == 'Switch':
-		attacker.isSwitching = 'out'
-		defender.isSwitching = 'in'
-		myResult.attacker = attacker
-		myResult.defender = defender
-		return myResult
-	if (attacker.item.find('Choice') != -1 and move != attacker.lastMove and attacker.lastMove.name != 'None') or \
-		(attacker.item == 'Assault Vest' and move.category == 'Status'):
-		return myResult
-	#print('target', target)
-	#print('move', move.name)
-	myResult = DamageCalc(attacker, attackerSide, defender, defenderSide, move, field, target, myResult)
-	#print('opp1', myResult.opponentDamage)
-	#print('opp2', myResult.opponent2Damage)
+	if move == 'switch':
+		attacker.isSwitching = 'in'
+		defender.isSwitching = 'out'
+		# print('before switch')
+		# print(field.userSide.pokes[0])
+		# print(field.userSide.pokes[1])
+		# print(field.opponentSide.pokes[0])
+		# print(field.opponentSide.pokes[1])
+		myResult = DamageCalc(attacker, attackerSide, defender, defenderSide, move, field, target, myResult)
+		# print('after switch')
+		# print(field.userSide.pokes[0])
+		# print(field.userSide.pokes[1])
+		# print(field.opponentSide.pokes[0])
+		# print(field.opponentSide.pokes[1])
+	else:
+		if (attacker.item.find('Choice') != -1 and move != attacker.lastMove and attacker.lastMove.name != 'None') or \
+			(attacker.item == 'Assault Vest' and move.category == 'Status'):
+			return myResult
+		# print('target', target)
+		# print('move', move.name)
+		# print('before move')
+		# print(field.userSide.pokes[0])
+		# print(field.userSide.pokes[1])
+		# print(field.opponentSide.pokes[0])
+		# print(field.opponentSide.pokes[1])
+		myResult = DamageCalc(attacker, attackerSide, defender, defenderSide, move, field, target, myResult)
+		# print('after move')
+		# print(field.userSide.pokes[0])
+		# print(field.userSide.pokes[1])
+		# print(field.opponentSide.pokes[0])
+		# print(field.opponentSide.pokes[1])
+		# print('opp1', myResult.opponentDamage)
+		# print('opp2', myResult.opponent2Damage)
 	return myResult
 
 

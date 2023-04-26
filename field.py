@@ -8,6 +8,7 @@ class field:
 		self.terrainList = ['None', 'Electric', 'Grassy', 'Psychic', 'Misty']
 		self.gravity = False
 		self.trickRoom = False
+		self.trickRoomTurns = 5
 		self.isBeadsOfRuin = False
 		self.isSwordOfRuin = False
 		self.isTabletsOfRuin = False

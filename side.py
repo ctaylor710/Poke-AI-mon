@@ -9,11 +9,14 @@ class side:
 		self.toxicSpikes = 0
 		self.stealthRock = False
 		self.isReflect = False
+		self.reflectTurns = 5
 		self.isLightScreen = False
+		self.lightScreenTurns = 5
 		self.tailwind = False
+		self.tailwindTurns = 4
 		self.isAuroraVeil = False
+		self.auroraVeilTurns = 5
 		self.friendGuard = False
-		self.isProtected = False
 		self.isWideGuard = False
 		self.isQuickGuard = False
 		self.isForesight = False
