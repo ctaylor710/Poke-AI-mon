@@ -456,6 +456,8 @@ def actionVector(result):
 	actionVec.append(result.confusion)
 	actionVec.append(result.preventsSound)
 
+	actionVec.append(moveIndex)
+
 
 	return actionVec
 
@@ -800,16 +802,23 @@ def Dynamics(state, field, pokes, moves, targets, availablePokes, envMode='simul
 
 	for pos in KOs:
 		if pos < 2:
-			if len(field.userSide.availablePokes) > 0:
-				print(f'user\'s {pokes[pos].name.name} was KOed. Which pokemon will you switch with?')
-				print(f'0: {field.userSide.availablePokes[0].name.name}')
-				if len(field.userSide.availablePokes) == 2:
-					print(f'1: {field.userSide.availablePokes[1].name.name}')
-				newPoke = input()
-				newPoke = int(newPoke)
-				field.userSide.pokes[pos] = field.userSide.availablePokes[newPoke]
-				pokes[pos] = field.userSide.availablePokes[newPoke]
-				field.userSide.availablePokes.pop(newPoke)
+			if envMode == 'simulation'
+				if len(field.userSide.availablePokes) > 0:
+					print(f'user\'s {pokes[pos].name.name} was KOed. Which pokemon will you switch with?')
+					print(f'0: {field.userSide.availablePokes[0].name.name}')
+					if len(field.userSide.availablePokes) == 2:
+						print(f'1: {field.userSide.availablePokes[1].name.name}')
+					newPoke = input()
+					newPoke = int(newPoke)
+					field.userSide.pokes[pos] = field.userSide.availablePokes[newPoke]
+					pokes[pos] = field.userSide.availablePokes[newPoke]
+					field.userSide.availablePokes.pop(newPoke)
+			else:
+				if len(field.userSide.availablePokes) > 0:
+				field.userSide.pokes[pos] = field.userSide.availablePokes[0]
+				pokes[pos] = field.userSide.availablePokes[0]
+				field.userSide.availablePokes.pop(0)
+				print('user switch')
 		else:
 			if len(field.opponentSide.availablePokes) > 0:
 				field.opponentSide.pokes[pos-2] = field.opponentSide.availablePokes[0]
@@ -822,7 +831,7 @@ def Dynamics(state, field, pokes, moves, targets, availablePokes, envMode='simul
 
 	return state, field
 
-def RewardFunction(state, action):
+def QFunction(state, action):
 	pass
 
 def KOed(side):
@@ -899,14 +908,4 @@ def demonstration():
 	return states, actions
 
 
-file = open('DemonstrationData.txt', 'a')
-for i in range(2):
-	states, actions = demonstration()
-	for j in range(len(states)-1):
-		file.write(str(states[j]))
-		file.write('\n\n')
-		file.write(str(actions[j]))
-		file.write('\n\n')
-
-file.close()
 
