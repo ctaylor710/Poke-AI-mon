@@ -218,7 +218,7 @@ def DamageCalc(attacker, attackerSide, defender, defenderSide, move, field, targ
 
 	basePower = CalculateBasePower(attacker, attackerSide, defender, defenderSide, move, field, hasAteAbilityTypeChange)
 
-	if move.bp == 0:
+	if basePower == 0:
 		return result
 
 	attack = CalculateAttack(attacker, attackerSide, defender, defenderSide, move, field, isCritical)
@@ -233,7 +233,7 @@ def DamageCalc(attacker, attackerSide, defender, defenderSide, move, field, targ
 
 	baseDamage = utils.getBaseDamage(attacker.level, basePower, attack, defense)
 
-	isSpread = move.target == 'allAdjacent' or move.target == 'allAdjacentFoes'
+	isSpread = move.target == 'AllAdjacent' or move.target == 'AllAdjacentFoes'
 	if isSpread:
 		baseDamage *= 0.75
 
@@ -275,11 +275,16 @@ def DamageCalc(attacker, attackerSide, defender, defenderSide, move, field, targ
 	for i in range(16):
 		damage.append(utils.getFinalDamage(baseDamage, i, typeEffectiveness, applyBurn, stabMod, finalMod, protect))
 
-	if len(target) == 1:
-		if target[0] % 2 == 1:
+	if attackerSide.side != defenderSide.side:
+		if target % 2 == 1:
 			result.opponentDamage = damage
 		else:
 			result.opponent2Damage = damage
+	else:
+		result.allyDamage = damage
+	if move.recoil > 0:
+		result.selfDamage = min(defender.currHP, round(damage[-1]*move.recoil))
+
 
 	return result
 
@@ -338,7 +343,7 @@ def CalculateBasePower(attacker, attackerSide, defender, defenderSide, move, fie
 		return 0
 
 	bpMods = CalculateBPMods(attacker, attackerSide, defender, defenderSide, move, field, basePower, hasAteAbilityTypeChange, turnOrder)
-	basePower = max(1, basePower*utils.chainMods(bpMods))
+	basePower = max(0, basePower*utils.chainMods(bpMods))
 
 	return basePower
 
@@ -736,19 +741,22 @@ def applyStatusMoves(attacker, attackerIndex, ally, attackerSide, defender, defe
 
 	# Section: Healing moves
 	if move.name in ['Heal Order', 'Milk Drink', 'Recover', 'Roost', 'Slack Off', 'Soft-Boiled']:
-		result.selfDamage = -attacker.stats['hp']/2
+		result.selfDamage = -round(attacker.stats['hp']/2)
 
 	if move.name in ['Moonlight', 'Morning Sun', 'Synthesis']:
 		if result.field.weather == 'None':
-			result.selfDamage = -attacker.stats['hp']/2
+			result.selfDamage = -round(attacker.stats['hp']/2)
 		elif result.field.weather == 'Sun':
-			result.selfDamage = -2*attacker.stats['hp']/3
+			result.selfDamage = -round(2*attacker.stats['hp']/3)
 		else:
-			result.selfDamage = -attacker.stats['hp']/4
+			result.selfDamage = -round(attacker.stats['hp']/4)
 
 	if move.name == 'Rest':
 		result.selfDamage = -attacker.stats['hp']
 		result.attacker.status = 'Sleep'
+
+	if move.name == 'Tailwind':
+		result.attackerSide.tailwind = True
 
 	attackerSide.pokes[attackerIndex] = attacker
 	attackerSide.pokes[-attackerIndex+1] = ally
@@ -936,8 +944,7 @@ def CalculateSecondaries(attacker, attackerIndex, ally, attackerSide, defender, 
 # most damage moves deal damage within a range of numbers, while status moves always have fixed effects. That being said,
 # the stochastic dynamics of the environment can be treated as deterministic by looking at 'best-case', 'average', and 'worst-case'
 # scenarios (these scenarios are deterministic depending on the action being taken, and so there is never doubt in what defines each scenario)
-def TakeMove(attacker, attackerSide, defender, defenderSide, move, field, target):
-	myResult = result()
+def TakeMove(attacker, attackerSide, defender, defenderSide, move, field, target, result):
 	if move == 'switch':
 		attacker.isSwitching = 'in'
 		defender.isSwitching = 'out'
@@ -946,7 +953,7 @@ def TakeMove(attacker, attackerSide, defender, defenderSide, move, field, target
 		# print(field.userSide.pokes[1])
 		# print(field.opponentSide.pokes[0])
 		# print(field.opponentSide.pokes[1])
-		myResult = DamageCalc(attacker, attackerSide, defender, defenderSide, move, field, target, myResult)
+		result = DamageCalc(attacker, attackerSide, defender, defenderSide, move, field, target, result)
 		# print('after switch')
 		# print(field.userSide.pokes[0])
 		# print(field.userSide.pokes[1])
@@ -955,7 +962,7 @@ def TakeMove(attacker, attackerSide, defender, defenderSide, move, field, target
 	else:
 		if (attacker.item.find('Choice') != -1 and move != attacker.lastMove and attacker.lastMove.name != 'None') or \
 			(attacker.item == 'Assault Vest' and move.category == 'Status'):
-			return myResult
+			return result
 		# print('target', target)
 		# print('move', move.name)
 		# print('before move')
@@ -963,7 +970,7 @@ def TakeMove(attacker, attackerSide, defender, defenderSide, move, field, target
 		# print(field.userSide.pokes[1])
 		# print(field.opponentSide.pokes[0])
 		# print(field.opponentSide.pokes[1])
-		myResult = DamageCalc(attacker, attackerSide, defender, defenderSide, move, field, target, myResult)
+		result = DamageCalc(attacker, attackerSide, defender, defenderSide, move, field, target, result)
 		# print('after move')
 		# print(field.userSide.pokes[0])
 		# print(field.userSide.pokes[1])
@@ -971,6 +978,6 @@ def TakeMove(attacker, attackerSide, defender, defenderSide, move, field, target
 		# print(field.opponentSide.pokes[1])
 		# print('opp1', myResult.opponentDamage)
 		# print('opp2', myResult.opponent2Damage)
-	return myResult
+	return result
 
 

@@ -5,7 +5,7 @@ class move:
 		self.zp = 0
 		self.maxPower = 0
 		self.type = 'Normal'
-		self.category = 'Physical'
+		self.category = 'Status'
 		self.multihit = [1]
 		self.hits = 1
 		self.drain = 0

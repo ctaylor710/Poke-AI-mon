@@ -92,6 +92,7 @@ def checkIntimidate(source, target):
 	blocked = target.ability == 'Clear Body' or target.ability == 'White Smoke' or target.ability == 'Hyper Cutter' or target.ability == 'Full Metal Body' or \
 		target.ability == 'Inner Focus' or target.ability == 'Own Tempo' or target.ability == 'Oblivious' or target.ability == 'Scrappy' or target.item == 'Clear Amulet'
 	if source.ability == 'Intimidate' and ~blocked:
+		print(f'{source.name.name} used intimidate')
 		if target.ability == 'Contrary' or target.ability == 'Defiant' or target.ability == 'Guard Dog':
 			target.addBoosts('at', +1)
 		elif target.ability == 'Simple':
