@@ -366,6 +366,8 @@ def EncodeSideInfo(side):
 
 	sideVec.append(side.isHelpingHand)
 
+	sideVec.append(len(side.availablePokes))
+
 	return sideVec
 
 def StateVector(field, userPokes, opponentPokes):
@@ -802,7 +804,7 @@ def Dynamics(state, field, pokes, moves, targets, availablePokes, envMode='simul
 
 	for pos in KOs:
 		if pos < 2:
-			if envMode == 'simulation'
+			if envMode == 'simulation':
 				if len(field.userSide.availablePokes) > 0:
 					print(f'user\'s {pokes[pos].name.name} was KOed. Which pokemon will you switch with?')
 					print(f'0: {field.userSide.availablePokes[0].name.name}')
@@ -815,10 +817,10 @@ def Dynamics(state, field, pokes, moves, targets, availablePokes, envMode='simul
 					field.userSide.availablePokes.pop(newPoke)
 			else:
 				if len(field.userSide.availablePokes) > 0:
-				field.userSide.pokes[pos] = field.userSide.availablePokes[0]
-				pokes[pos] = field.userSide.availablePokes[0]
-				field.userSide.availablePokes.pop(0)
-				print('user switch')
+					field.userSide.pokes[pos] = field.userSide.availablePokes[0]
+					pokes[pos] = field.userSide.availablePokes[0]
+					field.userSide.availablePokes.pop(0)
+					print('user switch')
 		else:
 			if len(field.opponentSide.availablePokes) > 0:
 				field.opponentSide.pokes[pos-2] = field.opponentSide.availablePokes[0]
@@ -831,8 +833,47 @@ def Dynamics(state, field, pokes, moves, targets, availablePokes, envMode='simul
 
 	return state, field
 
-def QFunction(state, action):
-	pass
+def RewardModel(state, action, theta):
+	userKOs = 0; oppKOs = 0
+	switchReward = 0; switchCost = 0
+	for i in range(2):
+		if state[i][14] == 0:
+			userKOs += 1
+		if state[i+2][14] == 0:
+			oppKOs += 1
+		if action[i][1][0] == 0: # switching
+			switchReward += 1
+		if action[i+2][1][0] == 0:
+			switchCost += 1
+
+	KOReward = state[10][-1] + oppKOs
+	KOCost = state[9][-1] + userKOs
+	damageReward = 0; damageCost = 0
+	speedReward = 1; speedCost = 1
+	for i in range(4):
+		userDamage = 0 if action[1][9] else action[i][5][-1] # Check protect for each mon
+		allyDamage = 0 if action[2][9] else action[i][6][-1]
+		opp1Damage = 0 if action[3][9] else action[i][7][-1]
+		opp2Damage = 0 if action[4][9] else action[i][8][-1]
+
+		damageReward += action[i][7][-1] + action[i][8][-1]
+		damageCost += action[i][5][-1] + action[i][6][-1]
+		for j in range(4):
+			for k in len(action[i][9+j]):
+				if action[i][9+j][k][0] == 5: # speed modifier
+					if j < 2:
+						speedReward *= action[i][9+j][k][1]*action[i][9+j][k][2] # number of stages multiplied by chance of boost occurring
+					else:
+						speedCost *= action[i][9+j][k][1]*action[i][9+j][k][2] # number of stages multiplied by chance of boost occurring
+		if state[5][4]: # tailwind doubles speed, so double reward
+			speedReward *= 2
+		if state[6][4]:
+			speedCost *= 2
+
+	return (theta[0]*KOReward - theta[1]*KOCost) + (theta[2]*damageReward - theta[3]*damageCost) + \
+		(theta[4]*speedReward - theta[5]*speedCost) + (theta[6]*switchReward - theta[7]*switchCost)
+	
+
 
 def KOed(side):
 	if len(side.availablePokes) == 0 and side.pokes[0].currHP == 0 and side.pokes[1].currHP == 0:
@@ -906,6 +947,3 @@ def demonstration():
 	else:
 		print('you lost!')
 	return states, actions
-
-
-

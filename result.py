@@ -36,4 +36,3 @@ class result:
 		self.confusion = 0
 		self.preventsSound = 0
 		self.turnOrder = []
-

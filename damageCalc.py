@@ -979,5 +979,3 @@ def TakeMove(attacker, attackerSide, defender, defenderSide, move, field, target
 		# print('opp1', myResult.opponentDamage)
 		# print('opp2', myResult.opponent2Damage)
 	return result
-
-

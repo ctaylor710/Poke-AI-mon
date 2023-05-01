@@ -127,6 +127,3 @@ class database:
 					newStates.addData(line)
 				self.statsDict[newStates.name ] = newStates
 		statFile.close
-
-		
-

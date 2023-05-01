@@ -192,5 +192,3 @@ class pokemon:
 		str+=f'Nature: {self.nature.name}\nMoves: {self.moves[0].name}, {self.moves[1].name}, {self.moves[2].name}, {self.moves[3].name}'
 
 		return str
-
-

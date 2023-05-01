@@ -188,5 +188,3 @@ def switchInChanges(switchedMon, ally, otherSideMon, otherSideMon2, side, field)
 		switchedMon.boosts['at'] += 1
 
 	return switchedMon, ally, field
-
-
