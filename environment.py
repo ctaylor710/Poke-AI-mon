@@ -22,7 +22,8 @@ def typeTable():
 	return {0:'None', 1:'Normal', 2:'Fire', 3:'Water', 4:'Grass', 5:'Electric', 6:'Ice', 7:'Fighting', 8:'Poison', \
 			8:'Ground', 9:'Flying', 10:'Psychic', 11:'Bug', 12:'Rock', 13:'Ghost', 14:'Dark', 15:'Dragon', \
 			16:'Steel', 17:'Fairy'}
-
+def statTable():
+	return {'hp':0, 'at':1, 'df':2, 'sa':3, 'sd':4, 'sp':5}
 def categoryTable():
 	return {0:'Status', 1:'Physical', 2:'Special'}
 
@@ -392,6 +393,15 @@ def StateVector(field, userPokes, opponentPokes):
 #			Again, order is determined by the availablePokes vector passed in
 # We then pass in the quantitative results of taking that move. Note that this is different from dynamics: the action is the damage, healing, etc. that results from taking that
 # move, and the dynamics is adding these quantitative results to the current state and updating it
+def statConversion(statChanges):
+	statTableCopy = statTable()
+	for i in range(len(statChanges)):
+		statChanges[i] = [statTableCopy[statChanges[i][0]], statChanges[i][1], statChanges[i][2]]
+	if len(statChanges) < 5:
+		for i in range(len(statChanges), 5):
+			statChanges.append([0, 0, 0])
+	return statChanges
+
 def actionVector(result):
 	actionVec = []
 
@@ -413,14 +423,14 @@ def actionVector(result):
 		actionVec.append(result.opponent2Damage)
 
 		if result.user == 0:
-			actionVec.append(result.selfStatChanges)
-			actionVec.append(result.allyStatChanges)
+			actionVec.append(statConversion(result.selfStatChanges))
+			actionVec.append(statConversion(result.allyStatChanges))
 		else:
-			actionVec.append(result.allyStatChanges)
-			actionVec.append(result.selfStatChanges)
+			actionVec.append(statConversion(result.allyStatChanges))
+			actionVec.append(statConversion(result.selfStatChanges))
 
-		actionVec.append(result.opponentStatChanges)
-		actionVec.append(result.opponent2StatChanges)
+		actionVec.append(statConversion(result.opponentStatChanges))
+		actionVec.append(statConversion(result.opponent2StatChanges))
 
 	else:
 		actionVec.append(EncodeSideInfo(result.defenderSide))
@@ -435,15 +445,15 @@ def actionVector(result):
 			actionVec.append(result.allyDamage)
 			actionVec.append([result.selfDamage])
 
-		actionVec.append(result.opponentStatChanges)
-		actionVec.append(result.opponent2StatChanges)
+		actionVec.append(statConversion(result.opponentStatChanges))
+		actionVec.append(statConversion(result.opponent2StatChanges))
 
 		if result.user == 2:
-			actionVec.append(result.selfStatChanges)
-			actionVec.append(result.allyStatChanges)
+			actionVec.append(statConversion(result.selfStatChanges))
+			actionVec.append(statConversion(result.allyStatChanges))
 		else:
-			actionVec.append(result.allyStatChanges)
-			actionVec.append(result.selfStatChanges)
+			actionVec.append(statConversion(result.allyStatChanges))
+			actionVec.append(statConversion(result.selfStatChanges))
 
 
 	actionVec.append(result.protects)
@@ -458,7 +468,7 @@ def actionVector(result):
 	actionVec.append(result.confusion)
 	actionVec.append(result.preventsSound)
 
-	actionVec.append(moveIndex)
+	# actionVec.append(moveIndex)
 
 
 	return actionVec
@@ -517,7 +527,8 @@ def TakeAction(field, pokes, moves, targets, availablePokes, repeat):
 					turnOrder[i][0] = inMon
 					field.opponentSide.pokes[userIndex] = inMon
 				if repeat:
-					print(f'{attackerSide}\'s {outMon.name.name} switched with {inMon.name.name}')
+					pass
+					# print(f'{attackerSide}\'s {outMon.name.name} switched with {inMon.name.name}')
 				if t == 1 or t == 2:
 					defenderSide = 'user'
 				else:
@@ -535,7 +546,8 @@ def TakeAction(field, pokes, moves, targets, availablePokes, repeat):
 				defender = pokes[t-1]
 				if not (turnOrder[i][1].name == 'Sucker Punch' and moves[t-1].category == 'Status'):
 					if repeat:
-						print(f'move {i+1}: {attackerSide}\'s {turnOrder[i][0].name.name} uses {turnOrder[i][1].name} against {defenderSide}\'s {defender.name.name}')
+						pass
+						# print(f'move {i+1}: {attackerSide}\'s {turnOrder[i][0].name.name} uses {turnOrder[i][1].name} against {defenderSide}\'s {defender.name.name}')
 					moveResult = damageCalc.TakeMove(turnOrder[i][0], attackerSide, defender, defenderSide, turnOrder[i][1], field, t, moveResult)
 				moveResult.user = user
 				moveResult.target.append(t)

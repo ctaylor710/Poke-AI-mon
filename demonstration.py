@@ -12,13 +12,15 @@ import damageCalc
 import numpy as np
 import random
 import environment as env
-file = open('DemonstrationData.txt', 'a')
-for i in range(2):
-	states, actions = env.demonstration()
-	for j in range(len(states)-1):
-		file.write(str(states[j]))
-		file.write('\n\n')
-		file.write(str(actions[j]))
-		file.write('\n\n')
 
-file.close()
+def battle():
+	file = open('DemonstrationData.txt', 'a')
+	for i in range(2):
+		states, actions = env.demonstration()
+		for j in range(len(states)-1):
+			file.write(str(states[j]))
+			file.write('\n\n')
+			file.write(str(actions[j]))
+			file.write('\n\n')
+
+	file.close()
