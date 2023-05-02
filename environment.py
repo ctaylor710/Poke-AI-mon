@@ -11,6 +11,7 @@ import utils
 import damageCalc
 import numpy as np
 import random
+import pickle
 
 database = database()
 database.addMoves()
@@ -978,3 +979,13 @@ def demonstration():
 	else:
 		print('you lost!')
 	return states, actions
+
+def Step(state, field, pokes, moves, targets, availablePokes):
+	theta = pickle.load(open('IRLWeights.pkl', 'rb'))
+	action = TakeAction(field, pokes, moves, targets, availablePokes, repeat)
+	next_state = Dynamics(state, myField, pokes, moves, targets, availablePokes)
+	reward = Reward(state, action, theta)
+	dones = 1 if KOed(field.userSide) or KOed(field.opponentSide) else 0
+	return action, next_state, reward, dones
+
+

@@ -142,5 +142,21 @@ def MetroHasting(states, actions, N=1000):
 			theta = theta1
 	return theta_samples
 
-# MetroHasting(states, actions)
-print(MetroHasting(states, actions))
+def FindWeights():
+	theta_pred = [0]*8
+	for _ in range(10):
+		theta_samples = MetroHasting(states, actions)
+		theta_samples = theta_samples[-11:-1]
+		for theta in theta_samples:
+			for i in range(len(theta)):
+				theta_pred[i] += theta[i]
+	for i in range(len(theta_pred)):
+		theta_pred[i] /= 100
+
+# print(theta_pred)
+# with open('IRLWeights.pkl', 'wb') as handle:
+# 	pickle.dump(theta_pred, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+# irl = pickle.load(open('IRLWeights.pkl', 'rb'))
+
+
