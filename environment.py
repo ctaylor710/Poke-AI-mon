@@ -27,7 +27,7 @@ def categoryTable():
 	return {0:'Status', 1:'Physical', 2:'Special'}
 
 def targetTable():
-	return {0:'AdjacentAlly', 1:'AdjacentAllyOrSelf', 2:'AdjacentFoe', 3:'AllAdjacentFoes', 4:'Allies', 5:'All', 6:'Self'}
+	return {0:'Adjacent', 1:'AdjacentAlly', 2:'AdjacentAllyOrSelf', 3:'AdjacentFoe', 4:'AllAdjacentFoes', 5:'Allies', 6:'All', 7:'Self'}
 
 def itemTable():
 	return {0:'Ability Shield', 1:'Focus Sash', 2:'Bright Powder', 3:'Weakness Policy', 4:'Eject Button', 5:'Iron Ball', 6:'Safety Goggles', 7:'Terrain Extender', \
@@ -228,6 +228,7 @@ def EncodeMoveInfo(move):
 
 	moveVec.append(move.priority)
 
+	## ERROR HERE
 	targetTableCopy = targetTable()
 	for target in targetTableCopy.keys():
 		if targetTableCopy[target] == move.target:
@@ -833,7 +834,7 @@ def Dynamics(state, field, pokes, moves, targets, availablePokes, envMode='simul
 
 	return state, field
 
-def RewardModel(state, action, theta):
+def Reward(state, action, theta):
 	userKOs = 0; oppKOs = 0
 	switchReward = 0; switchCost = 0
 	for i in range(2):
@@ -841,39 +842,44 @@ def RewardModel(state, action, theta):
 			userKOs += 1
 		if state[i+2][14] == 0:
 			oppKOs += 1
-		if action[i][1][0] == 0: # switching
-			switchReward += 1
-		if action[i+2][1][0] == 0:
-			switchCost += 1
+		if len(action[i][1]) > 0:
+			if action[i][1][0] == 0: # switching
+				switchReward += 1
+		if len(action[i+2][1]) > 0:
+			if action[i+2][1][0] == 0:
+				switchCost += 1
 
-	KOReward = state[10][-1] + oppKOs
-	KOCost = state[9][-1] + userKOs
+	KOReward = state[6][-1] + oppKOs
+	KOCost = state[5][-1] + userKOs
 	damageReward = 0; damageCost = 0
 	speedReward = 1; speedCost = 1
 	for i in range(4):
-		userDamage = 0 if action[1][9] else action[i][5][-1] # Check protect for each mon
-		allyDamage = 0 if action[2][9] else action[i][6][-1]
-		opp1Damage = 0 if action[3][9] else action[i][7][-1]
-		opp2Damage = 0 if action[4][9] else action[i][8][-1]
+		userDamage = 0 if action[0][9] else action[i][5][-1] # Check protect for each mon
+		allyDamage = 0 if action[1][9] else action[i][6][-1]
+		opp1Damage = 0 if action[2][9] else action[i][7][-1]
+		opp2Damage = 0 if action[3][9] else action[i][8][-1]
 
 		damageReward += action[i][7][-1] + action[i][8][-1]
 		damageCost += action[i][5][-1] + action[i][6][-1]
 		for j in range(4):
-			for k in len(action[i][9+j]):
-				if action[i][9+j][k][0] == 5: # speed modifier
-					if j < 2:
-						speedReward *= action[i][9+j][k][1]*action[i][9+j][k][2] # number of stages multiplied by chance of boost occurring
-					else:
-						speedCost *= action[i][9+j][k][1]*action[i][9+j][k][2] # number of stages multiplied by chance of boost occurring
+			if len(action[i][9+j]) > 0:
+				print(action[i][9+j])
+				for k in range(len(action[i][9+j])):
+					if action[i][9+j][k][0] == 5: # speed modifier
+						if j < 2:
+							speedReward *= action[i][9+j][k][1]*action[i][9+j][k][2] # number of stages multiplied by chance of boost occurring
+						else:
+							speedCost *= action[i][9+j][k][1]*action[i][9+j][k][2] # number of stages multiplied by chance of boost occurring
 		if state[5][4]: # tailwind doubles speed, so double reward
 			speedReward *= 2
 		if state[6][4]:
 			speedCost *= 2
 
-	return (theta[0]*KOReward - theta[1]*KOCost) + (theta[2]*damageReward - theta[3]*damageCost) + \
+	totalReward = (theta[0]*KOReward - theta[1]*KOCost) + (theta[2]*damageReward - theta[3]*damageCost) + \
 		(theta[4]*speedReward - theta[5]*speedCost) + (theta[6]*switchReward - theta[7]*switchCost)
-	
 
+	beta = 1
+	return np.exp(beta * totalReward)
 
 def KOed(side):
 	if len(side.availablePokes) == 0 and side.pokes[0].currHP == 0 and side.pokes[1].currHP == 0:
