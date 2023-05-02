@@ -37,7 +37,6 @@ class DQN(object):
         Q_state = self.qnetwork_local(state).detach().numpy()
         return np.argmax(Q_state)
 
-
     # train the Q-functions
     def update_parameters(self, memory, batch_size):
 
@@ -45,6 +44,9 @@ class DQN(object):
         states, actions, rewards, next_states, dones = memory.sample(batch_size)
 
         # convert to torch tensors
+        #! Don't forgot to add the Human action into the state
+        # The human action can got from the actions it self
+        # similarlly we also need to add the next_actions into the memory as well
         states = torch.FloatTensor(states)
         actions = torch.FloatTensor(actions).unsqueeze(1).long()
         rewards = torch.FloatTensor(rewards).unsqueeze(1)

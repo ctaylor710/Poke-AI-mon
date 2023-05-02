@@ -22,13 +22,12 @@ def typeTable():
 	return {0:'None', 1:'Normal', 2:'Fire', 3:'Water', 4:'Grass', 5:'Electric', 6:'Ice', 7:'Fighting', 8:'Poison', \
 			8:'Ground', 9:'Flying', 10:'Psychic', 11:'Bug', 12:'Rock', 13:'Ghost', 14:'Dark', 15:'Dragon', \
 			16:'Steel', 17:'Fairy'}
-def statTable():
-	return {'hp':0, 'at':1, 'df':2, 'sa':3, 'sd':4, 'sp':5}
+
 def categoryTable():
 	return {0:'Status', 1:'Physical', 2:'Special'}
 
 def targetTable():
-	return {0:'AdjacentAlly', 1:'AdjacentAllyOrSelf', 2:'AdjacentFoe', 3:'AllAdjacentFoes', 4:'Allies', 5:'All', 6:'Self'}
+	return {0:'Adjacent', 1:'AdjacentAlly', 2:'AdjacentAllyOrSelf', 3:'AdjacentFoe', 4:'AllAdjacentFoes', 5:'Allies', 6:'All', 7:'Self'}
 
 def itemTable():
 	return {0:'Ability Shield', 1:'Focus Sash', 2:'Bright Powder', 3:'Weakness Policy', 4:'Eject Button', 5:'Iron Ball', 6:'Safety Goggles', 7:'Terrain Extender', \
@@ -229,6 +228,7 @@ def EncodeMoveInfo(move):
 
 	moveVec.append(move.priority)
 
+	## ERROR HERE
 	targetTableCopy = targetTable()
 	for target in targetTableCopy.keys():
 		if targetTableCopy[target] == move.target:
@@ -393,15 +393,6 @@ def StateVector(field, userPokes, opponentPokes):
 #			Again, order is determined by the availablePokes vector passed in
 # We then pass in the quantitative results of taking that move. Note that this is different from dynamics: the action is the damage, healing, etc. that results from taking that
 # move, and the dynamics is adding these quantitative results to the current state and updating it
-def statConversion(statChanges):
-	statTableCopy = statTable()
-	for i in range(len(statChanges)):
-		statChanges[i] = [statTableCopy[statChanges[i][0]], statChanges[i][1], statChanges[i][2]]
-	if len(statChanges) < 5:
-		for i in range(len(statChanges), 5):
-			statChanges.append([0, 0, 0])
-	return statChanges
-
 def actionVector(result):
 	actionVec = []
 
@@ -423,14 +414,14 @@ def actionVector(result):
 		actionVec.append(result.opponent2Damage)
 
 		if result.user == 0:
-			actionVec.append(statConversion(result.selfStatChanges))
-			actionVec.append(statConversion(result.allyStatChanges))
+			actionVec.append(result.selfStatChanges)
+			actionVec.append(result.allyStatChanges)
 		else:
-			actionVec.append(statConversion(result.allyStatChanges))
-			actionVec.append(statConversion(result.selfStatChanges))
+			actionVec.append(result.allyStatChanges)
+			actionVec.append(result.selfStatChanges)
 
-		actionVec.append(statConversion(result.opponentStatChanges))
-		actionVec.append(statConversion(result.opponent2StatChanges))
+		actionVec.append(result.opponentStatChanges)
+		actionVec.append(result.opponent2StatChanges)
 
 	else:
 		actionVec.append(EncodeSideInfo(result.defenderSide))
@@ -445,15 +436,15 @@ def actionVector(result):
 			actionVec.append(result.allyDamage)
 			actionVec.append([result.selfDamage])
 
-		actionVec.append(statConversion(result.opponentStatChanges))
-		actionVec.append(statConversion(result.opponent2StatChanges))
+		actionVec.append(result.opponentStatChanges)
+		actionVec.append(result.opponent2StatChanges)
 
 		if result.user == 2:
-			actionVec.append(statConversion(result.selfStatChanges))
-			actionVec.append(statConversion(result.allyStatChanges))
+			actionVec.append(result.selfStatChanges)
+			actionVec.append(result.allyStatChanges)
 		else:
-			actionVec.append(statConversion(result.allyStatChanges))
-			actionVec.append(statConversion(result.selfStatChanges))
+			actionVec.append(result.allyStatChanges)
+			actionVec.append(result.selfStatChanges)
 
 
 	actionVec.append(result.protects)
@@ -527,8 +518,7 @@ def TakeAction(field, pokes, moves, targets, availablePokes, repeat):
 					turnOrder[i][0] = inMon
 					field.opponentSide.pokes[userIndex] = inMon
 				if repeat:
-					pass
-					# print(f'{attackerSide}\'s {outMon.name.name} switched with {inMon.name.name}')
+					print(f'{attackerSide}\'s {outMon.name.name} switched with {inMon.name.name}')
 				if t == 1 or t == 2:
 					defenderSide = 'user'
 				else:
@@ -546,8 +536,7 @@ def TakeAction(field, pokes, moves, targets, availablePokes, repeat):
 				defender = pokes[t-1]
 				if not (turnOrder[i][1].name == 'Sucker Punch' and moves[t-1].category == 'Status'):
 					if repeat:
-						pass
-						# print(f'move {i+1}: {attackerSide}\'s {turnOrder[i][0].name.name} uses {turnOrder[i][1].name} against {defenderSide}\'s {defender.name.name}')
+						print(f'move {i+1}: {attackerSide}\'s {turnOrder[i][0].name.name} uses {turnOrder[i][1].name} against {defenderSide}\'s {defender.name.name}')
 					moveResult = damageCalc.TakeMove(turnOrder[i][0], attackerSide, defender, defenderSide, turnOrder[i][1], field, t, moveResult)
 				moveResult.user = user
 				moveResult.target.append(t)
@@ -845,7 +834,7 @@ def Dynamics(state, field, pokes, moves, targets, availablePokes, envMode='simul
 
 	return state, field
 
-def RewardModel(state, action, theta):
+def Reward(state, action, theta):
 	userKOs = 0; oppKOs = 0
 	switchReward = 0; switchCost = 0
 	for i in range(2):
@@ -853,39 +842,69 @@ def RewardModel(state, action, theta):
 			userKOs += 1
 		if state[i+2][14] == 0:
 			oppKOs += 1
-		if action[i][1][0] == 0: # switching
-			switchReward += 1
-		if action[i+2][1][0] == 0:
-			switchCost += 1
+		if len(action[i][1]) > 0:
+			if action[i][1][0] == 0: # switching
+				switchReward += 1
+		if len(action[i+2][1]) > 0:
+			if action[i+2][1][0] == 0:
+				switchCost += 1
 
-	KOReward = state[10][-1] + oppKOs
-	KOCost = state[9][-1] + userKOs
+	KOReward = state[6][-1] + oppKOs
+	KOCost = state[5][-1] + userKOs
 	damageReward = 0; damageCost = 0
 	speedReward = 1; speedCost = 1
 	for i in range(4):
-		userDamage = 0 if action[1][9] else action[i][5][-1] # Check protect for each mon
-		allyDamage = 0 if action[2][9] else action[i][6][-1]
-		opp1Damage = 0 if action[3][9] else action[i][7][-1]
-		opp2Damage = 0 if action[4][9] else action[i][8][-1]
+		userDamage = 0 if action[0][9] else action[i][5][-1] # Check protect for each mon
+		allyDamage = 0 if action[1][9] else action[i][6][-1]
+		opp1Damage = 0 if action[2][9] else action[i][7][-1]
+		opp2Damage = 0 if action[3][9] else action[i][8][-1]
 
 		damageReward += action[i][7][-1] + action[i][8][-1]
 		damageCost += action[i][5][-1] + action[i][6][-1]
 		for j in range(4):
-			for k in len(action[i][9+j]):
-				if action[i][9+j][k][0] == 5: # speed modifier
-					if j < 2:
-						speedReward *= action[i][9+j][k][1]*action[i][9+j][k][2] # number of stages multiplied by chance of boost occurring
-					else:
-						speedCost *= action[i][9+j][k][1]*action[i][9+j][k][2] # number of stages multiplied by chance of boost occurring
+			if len(action[i][9+j]) > 0:
+				for k in range(len(action[i][9+j])):
+					if action[i][9+j][k][0] == 5: # speed modifier
+						if j < 2:
+							speedReward *= action[i][9+j][k][1]*action[i][9+j][k][2] # number of stages multiplied by chance of boost occurring
+						else:
+							speedCost *= action[i][9+j][k][1]*action[i][9+j][k][2] # number of stages multiplied by chance of boost occurring
 		if state[5][4]: # tailwind doubles speed, so double reward
 			speedReward *= 2
 		if state[6][4]:
 			speedCost *= 2
+	if damageReward > 0:
+		damageReward = -1/damageReward
+	else:
+		damageReward = -2
+	if damageCost > 0:
+		damageCost = -1/damageCost
+	else:
+		damageCost = -2
 
-	return (theta[0]*KOReward - theta[1]*KOCost) + (theta[2]*damageReward - theta[3]*damageCost) + \
+	if speedReward > 0:
+		speedReward = -1/speedReward
+	else:
+		speedReward = -2
+	if speedCost > 0:
+		speedCost = -1/speedCost
+	else:
+		speedCost = -2
+
+	# print('KO Reward', KOReward)
+	# print('KO Cost', KOCost)
+	# print('Damage Reward', damageReward)
+	# print('Damage Cost', damageCost)
+	# print('Speed Reward', speedReward)
+	# print('Speed Cost', speedCost)
+	# print('Switch Reward', switchReward)
+	# print('Switch Cost', switchCost)
+
+	totalReward = (theta[0]*KOReward - theta[1]*KOCost) + (theta[2]*damageReward - theta[3]*damageCost) + \
 		(theta[4]*speedReward - theta[5]*speedCost) + (theta[6]*switchReward - theta[7]*switchCost)
-	
 
+	beta = 1
+	return np.exp(beta * totalReward)
 
 def KOed(side):
 	if len(side.availablePokes) == 0 and side.pokes[0].currHP == 0 and side.pokes[1].currHP == 0:
