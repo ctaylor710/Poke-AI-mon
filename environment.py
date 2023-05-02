@@ -863,7 +863,6 @@ def Reward(state, action, theta):
 		damageCost += action[i][5][-1] + action[i][6][-1]
 		for j in range(4):
 			if len(action[i][9+j]) > 0:
-				print(action[i][9+j])
 				for k in range(len(action[i][9+j])):
 					if action[i][9+j][k][0] == 5: # speed modifier
 						if j < 2:
@@ -874,6 +873,32 @@ def Reward(state, action, theta):
 			speedReward *= 2
 		if state[6][4]:
 			speedCost *= 2
+	if damageReward > 0:
+		damageReward = -1/damageReward
+	else:
+		damageReward = -2
+	if damageCost > 0:
+		damageCost = -1/damageCost
+	else:
+		damageCost = -2
+
+	if speedReward > 0:
+		speedReward = -1/speedReward
+	else:
+		speedReward = -2
+	if speedCost > 0:
+		speedCost = -1/speedCost
+	else:
+		speedCost = -2
+
+	# print('KO Reward', KOReward)
+	# print('KO Cost', KOCost)
+	# print('Damage Reward', damageReward)
+	# print('Damage Cost', damageCost)
+	# print('Speed Reward', speedReward)
+	# print('Speed Cost', speedCost)
+	# print('Switch Reward', switchReward)
+	# print('Switch Cost', switchCost)
 
 	totalReward = (theta[0]*KOReward - theta[1]*KOCost) + (theta[2]*damageReward - theta[3]*damageCost) + \
 		(theta[4]*speedReward - theta[5]*speedCost) + (theta[6]*switchReward - theta[7]*switchCost)

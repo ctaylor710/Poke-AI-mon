@@ -110,25 +110,37 @@ theta = prior.copy()
 # 		denom = denom + demProduct
 # 		i += 1
 # 	return num/denom # Aforementioned vector operations, denom is a scalar
-def MetroHasting(prior, N=1000):
-    # start with random choice of theta
-    theta = [1/8]*8
-    for _ in range(N):
-        # append theta to theta_samples
-        theta_samples.append(theta)
-        # find new theta1 close to theta
-        theta1 = theta + (np.random.rand()-0.5)
-        if theta1 > np.pi/2:
-            theta1 = np.pi/2
-        if theta1 < 0:
-            theta1 = 0.
-        # generate random number between [0,1]
-        p_accept = np.random.rand()
-        # compute the numerators, assume uniform prior
-        p_theta1 = reward(x, theta1)
-        p_theta = reward(x, theta)
-        # decide whether to accept new theta1
-        if p_theta1 / p_theta > p_accept:
-            theta = theta1
-    return theta_samples
-print(RewardModel(states, actions))
+def MetroHasting(states, actions, N=1000):
+	# start with random choice of theta
+	theta = [1/8]*8
+	theta_samples = []
+	for _ in range(N):
+		# append theta to theta_samples
+		theta_samples.append(theta)
+		# find new theta1 close to theta
+		theta1 = [0]*8
+		for i in range(len(theta)):
+			theta1[i] = theta[i] + 0.1*(2*np.random.rand()-1)
+			if theta1[i] > 1:
+				theta1[i] = 1
+			if theta1[i] < 0:
+				theta1[i] = 0
+
+		# generate random number between [0,1]
+		p_accept = np.random.rand()
+		# compute the numerators, assume uniform prior
+		p_theta1 = 1
+		p_theta = 1
+		for i in range(len(states)):
+			# print(env.Reward(states[i], actions[i], theta))
+			p_theta1 *= env.Reward(states[i], actions[i], theta1)
+			p_theta *= env.Reward(states[i], actions[i], theta)
+		# print(p_theta1)
+		# print(p_theta)
+		# decide whether to accept new theta1
+		if p_theta1 / p_theta > p_accept:
+			theta = theta1
+	return theta_samples
+
+# MetroHasting(states, actions)
+print(MetroHasting(states, actions))
