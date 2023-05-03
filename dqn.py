@@ -7,7 +7,7 @@ DQN Implementation
 import torch
 import torch.nn.functional as F
 from torch.optim import Adam
-from DQN.models import QNetwork
+from models import QNetwork
 import numpy as np
 
 # TODO 2. The DQN function is to use the predicted human action and current state to return the robot action that maximize the Q value
@@ -41,17 +41,18 @@ class DQN(object):
     def update_parameters(self, memory, batch_size):
 
         # sample a batch from memory
-        states, actions, rewards, next_states, dones = memory.sample(batch_size)
+        state, action, reward, next_state, next_action, done = memory.sample(batch_size)
 
         # convert to torch tensors
         #! Don't forgot to add the Human action into the state
         # The human action can got from the actions it self
         # similarlly we also need to add the next_actions into the memory as well
-        states = torch.FloatTensor(states)
-        actions = torch.FloatTensor(actions).unsqueeze(1).long()
-        rewards = torch.FloatTensor(rewards).unsqueeze(1)
-        next_states = torch.FloatTensor(next_states)
-        dones = torch.FloatTensor(dones).unsqueeze(1)
+        states = torch.FloatTensor(state)
+        actions = torch.FloatTensor(action).unsqueeze(1).long()
+        rewards = torch.FloatTensor(reward).unsqueeze(1)
+        next_states = torch.FloatTensor(next_state)
+        next_action = torch.FloatTensor(next_action).unsqueeze(1).long()
+        dones = torch.FloatTensor(done).unsqueeze(1)
 
         # Get max predicted Q values (for next states) from target model
         Q_targets_next = self.qnetwork_target(next_states).detach().max(1)[0].unsqueeze(1)

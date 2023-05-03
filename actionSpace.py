@@ -66,12 +66,9 @@ def ActionSpaceBot(userPoke, ally, availablePokes, field):
 				for t2 in target2:
 					# Setting up a flag
 					bothSwitch = False
-					if t1 == [0,5]:
-						if t2 == [0,5]:
-							bothSwitch = True
-					elif t1 == [0,6]:
-						if t2 == [0,6]:
-							bothSwitch = True
+					if t1[0] == 0 and t1 == t2:
+						# print('Yo')
+						bothSwitch = True
 					else:
 						bothSwitch = False
 					# only append the moves if not both switching

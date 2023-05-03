@@ -31,7 +31,7 @@ def categoryTable():
 	return {0:'Status', 1:'Physical', 2:'Special'}
 
 def targetTable():
-	return {0:'Adjacent', 1:'AdjacentAlly', 2:'AdjacentAllyOrSelf', 3:'AdjacentFoe', 4:'AllAdjacentFoes', 5:'Allies', 6:'All', 7:'Self'}
+	return {0:'Adjacent', 1:'AdjacentAlly', 2:'AdjacentAllyOrSelf', 3:'AdjacentFoe', 4:'AllAdjacentFoes', 5:'Allies', 6:'AllAdjacent', 7:'Self'}
 
 def itemTable():
 	return {0:'Ability Shield', 1:'Focus Sash', 2:'Bright Powder', 3:'Weakness Policy', 4:'Eject Button', 5:'Iron Ball', 6:'Safety Goggles', 7:'Terrain Extender', \
@@ -406,10 +406,14 @@ def statConversion(statChanges):
 	return statChanges
 
 def actionVector(result):
+	#print(result.move)
 	actionVec = []
 
 	actionVec.append(result.user)
-	actionVec.append(result.target)
+	target = result.target.copy()
+	while len(target) < 3:
+		target.append(-1)
+	actionVec.append(target)
 
 	actionVec.append(EncodeFieldInfo(result.field))
 	if result.attackerSide.side == 'user':
@@ -471,7 +475,21 @@ def actionVector(result):
 	actionVec.append(result.confusion)
 	actionVec.append(result.preventsSound)
 
-	# actionVec.append(moveIndex)
+	moveIndex = 4
+	if result.user < 2:
+		poke = result.field.userSide.pokes[result.user]
+		# print(poke)
+	else:
+		poke = result.field.opponentSide.pokes[result.user-2]
+		# print(poke)
+	for i in range(len(poke.moves)):
+		# movePoke = poke.moves[i].name
+		# moveResult = result.move.name
+		# # print('Possible move',movePoke,'			ActualMove',moveResult)
+		if poke.moves[i].name == result.move.name:
+			# print(result.move.name)
+			moveIndex = i
+	actionVec.append(moveIndex)
 
 
 	return actionVec
@@ -540,14 +558,17 @@ def TakeAction(field, pokes, moves, targets, availablePokes, repeat):
 				moveResult.user = user
 				moveResult.target.append(t)
 				moveResult.target.append(target[1])
-
+			elif t == 0 and not repeat:
+				moveResult.user = user
+				moveResult.target.append(t)
+				moveResult.target.append(target[1])
 			elif(t > 0 and t <= 4): # 1 <= target <= 4
 				if t == 1 or t == 2:
 					defenderSide = 'user'
 				else:
 					defenderSide = 'opponent'
 				defender = pokes[t-1]
-				print(moves[t-1])
+				# print(moves[t-1])
 				if not (turnOrder[i][1].name == 'Sucker Punch' and moves[t-1].category == 'Status'):
 					if repeat:
 						pass
@@ -555,6 +576,7 @@ def TakeAction(field, pokes, moves, targets, availablePokes, repeat):
 					moveResult = damageCalc.TakeMove(turnOrder[i][0], attackerSide, defender, defenderSide, turnOrder[i][1], field, t, moveResult)
 				moveResult.user = user
 				moveResult.target.append(t)
+				moveResult.move = turnOrder[i][1]
 		moveResult.turnOrder = turnOrder
 		actionVec.append(actionVector(moveResult))
 
@@ -678,7 +700,7 @@ def Dynamics(state, field, pokes, moves, targets, availablePokes, envMode='simul
 			for t in targetPos:
 				if t-1 in KOs:
 					targetPos.remove(t)
-		print(targetPos)
+		# print(targetPos)
 		if targetPos[0] == 0:
 			# inTarget = targetPos[1] - 5
 			# if inTarget <= 2:
@@ -720,6 +742,8 @@ def Dynamics(state, field, pokes, moves, targets, availablePokes, envMode='simul
 					newResult = damageCalc.TakeMove(pokes[userPos], attackerSide, pokes[targetPos[0]-1], defenderSide, moves[userPos], field, targetPos[0], newResult)
 					newResult.user = userPos
 					newResult.target.append(targetPos[0])
+					newResult.move = moves[userPos]
+					print('***********************', newResult.move)
 					action[i] = actionVector(newResult)
 
 
@@ -841,13 +865,13 @@ def Dynamics(state, field, pokes, moves, targets, availablePokes, envMode='simul
 					field.userSide.pokes[pos] = field.userSide.availablePokes[0]
 					pokes[pos] = field.userSide.availablePokes[0]
 					field.userSide.availablePokes.pop(0)
-					print('user switch')
+					# print('user switch')
 		else:
 			if len(field.opponentSide.availablePokes) > 0:
 				field.opponentSide.pokes[pos-2] = field.opponentSide.availablePokes[0]
 				pokes[pos] = field.opponentSide.availablePokes[0]
 				field.opponentSide.availablePokes.pop(0)
-				print('opponent switch')
+				# print('opponent switch')
 
 	state = ResetConditions(field, state)
 	state = StateVector(field, field.userSide.pokes, field.opponentSide.pokes)
@@ -1002,9 +1026,9 @@ def demonstration():
 def Step(state, field, pokes, moves, targets, availablePokes):
 	theta = pickle.load(open('IRLWeights.pkl', 'rb'))
 	action = TakeAction(field, pokes, moves, targets, availablePokes, True)
-	next_state = Dynamics(state, field, pokes, moves, targets, availablePokes, envMode='RL Testing')
+	next_state, field = Dynamics(state, field, pokes, moves, targets, availablePokes, envMode='RL Testing')
 	reward = Reward(state, action, theta)
 	dones = 1 if KOed(field.userSide) or KOed(field.opponentSide) else 0
-	return action, next_state, reward, dones
+	return action, next_state, reward, dones, field
 
 
