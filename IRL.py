@@ -10,6 +10,7 @@ from result import result
 import utils
 import damageCalc
 import numpy as np
+from matplotlib import pyplot as plt
 import random
 import environment as env
 import pickle
@@ -152,11 +153,32 @@ def FindWeights():
 				theta_pred[i] += theta[i]
 	for i in range(len(theta_pred)):
 		theta_pred[i] /= 100
+	return theta_pred
 
 # print(theta_pred)
 # with open('IRLWeights.pkl', 'wb') as handle:
 # 	pickle.dump(theta_pred, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
 # irl = pickle.load(open('IRLWeights.pkl', 'rb'))
+thetas = np.zeros([1, 8])
+for i in range(100):
+	theta = FindWeights()
+	if i == 0:
+		thetas = np.array(theta)
+	else:
+		thetas = np.vstack([thetas, theta])
+	print(f'Loop number {i}')
+
+for i in range(8):
+	f = plt.figure()
+	plt.plot(range(1, 101), thetas[:, i])
+	plt.title(f'Value of theta_{i+1} over 100 Runs of Metropolis-Hasting\'s Algorithm')
+	plt.xlabel('Iteration Number')
+	plt.ylabel('Weight Value')
+	plt.ylim([-0.1, 1.1])
+	f.show()
+	input('Press ENTER to continue: ')
+	plt.close()
+
 
 
