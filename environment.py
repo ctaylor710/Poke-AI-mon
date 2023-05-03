@@ -539,7 +539,10 @@ def TakeAction(field, pokes, moves, targets, availablePokes, repeat):
 				moveResult.user = user
 				moveResult.target.append(t)
 				moveResult.target.append(target[1])
-
+			elif t == 0 and not repeat:
+				moveResult.user = user
+				moveResult.target.append(t)
+				moveResult.target.append(target[1])
 			elif(t > 0 and t <= 4): # 1 <= target <= 4
 				if t == 1 or t == 2:
 					defenderSide = 'user'
@@ -642,6 +645,7 @@ def ResetConditions(field, state):
 def Dynamics(state, field, pokes, moves, targets, availablePokes, envMode='simulation'):
 	# To clarify: the length of the action vector is only at max 4, but each element is a large vector containing all the information of that move
 	KOs = []
+	print(targets)
 	for i in range(len(pokes)):
 		action = TakeAction(field, pokes, moves, targets, availablePokes, False)
 		fieldVec = action[i][2]
@@ -759,7 +763,12 @@ def Dynamics(state, field, pokes, moves, targets, availablePokes, envMode='simul
 								if action[i][9+j][k][2] > p:
 									field.userSide.pokes[userOrder[j]].boosts[stat] += stages
 							else:
-								field.userSide.pokes[j].boosts[stat] += stages
+								statTableCopy = statTable()
+								statStr = ''
+								for s in statTableCopy.keys():
+									if statTableCopy[s] == j:
+										statStr = s
+								field.userSide.pokes[j].boosts[statStr] += stages
 					# print(field.userSide.pokes[j].boosts)
 
 					if action[j][13]:
@@ -993,8 +1002,8 @@ def demonstration():
 
 def Step(state, field, pokes, moves, targets, availablePokes):
 	theta = pickle.load(open('IRLWeights.pkl', 'rb'))
-	action = TakeAction(field, pokes, moves, targets, availablePokes, repeat)
-	next_state = Dynamics(state, myField, pokes, moves, targets, availablePokes)
+	action = TakeAction(field, pokes, moves, targets, availablePokes, True)
+	next_state = Dynamics(state, field, pokes, moves, targets, availablePokes)
 	reward = Reward(state, action, theta)
 	dones = 1 if KOed(field.userSide) or KOed(field.opponentSide) else 0
 	return action, next_state, reward, dones
