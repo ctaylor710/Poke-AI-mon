@@ -902,6 +902,12 @@ def Reward(state, action, theta):
 			speedReward *= 2
 		if state[6][4]:
 			speedCost *= 2
+	# trick room flips turn order, so flip speed rewards if active
+	if state[4][2]:
+		temp = speedReward
+		speedReward = speedCost
+		speedCost = temp
+
 	if damageReward > 0:
 		damageReward = -1/damageReward
 	else:
@@ -1014,6 +1020,6 @@ def Step(state, field, pokes, moves, targets, availablePokes):
 	next_state, field = Dynamics(state, field, pokes, moves, targets, availablePokes, envMode='RL Testing')
 	reward = Reward(state, action, theta)
 	dones = 1 if KOed(field.userSide) or KOed(field.opponentSide) else 0
-	return action, next_state, reward, dones
+	return action, next_state, reward, dones, field
 
 
