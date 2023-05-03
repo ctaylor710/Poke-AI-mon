@@ -38,6 +38,8 @@ state = env.StateVector(myField, myField.userSide.pokes, myField.opponentSide.po
 pokes = myField.userSide.pokes + myField.opponentSide.pokes
 botmoveList, bottargetList = ActionSpaceBot(myField.userSide.pokes[0], myField.userSide.pokes[1], myField.userSide.availablePokes, myField)
 # randomly pick a bot moves
+print(len(botmoveList))
+print(len(bottargetList))
 index = random.randint(0, 195)  # recall the length of the move List is 196
 botmove = botmoveList[index]
 bottarget = bottargetList[index]
@@ -46,8 +48,7 @@ moves = botmove + humanmove
 targets = bottarget + humantarget
 availablePokes = myField.userSide.availablePokes
 
-
-
+print(targets)
 action, next_state, reward, dones = env.Step(state, myField, pokes, moves, targets, availablePokes)
 
 print('action:',action,'\n\nNext State',next_state,'\n\nReward',reward,'\n\nDone',dones)

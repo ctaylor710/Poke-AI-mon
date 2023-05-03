@@ -64,8 +64,20 @@ def ActionSpaceBot(userPoke, ally, availablePokes, field):
 				# Store every possible moves and target into a list
 			for t1 in target1:
 				for t2 in target2:
-					moves.append([move1, move2])
-					targets.append([t1, t2])
+					# Setting up a flag
+					bothSwitch = False
+					if t1 == [0,5]:
+						if t2 == [0,5]:
+							bothSwitch = True
+					elif t1 == [0,6]:
+						if t2 == [0,6]:
+							bothSwitch = True
+					else:
+						bothSwitch = False
+					# only append the moves if not both switching
+					if bothSwitch == False:
+						moves.append([move1, move2])
+						targets.append([t1, t2])
 
 	# for i in range(len(moves)):
 	# 	# take action with moves[i], targets[i]
