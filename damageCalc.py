@@ -91,10 +91,11 @@ def DamageCalc(attacker, attackerSide, defender, defenderSide, move, field, targ
 	attackerSide = utils.checkInfiltrator(attackerSide)
 	defenderSide = utils.checkInfiltrator(defenderSide)
 	result = UpdateResult(attacker, ally, attackerSide, defender, defender2, defenderSide, field, result)
+	result.move == move
 
 	if move == 'switch':
 		return result
-
+	
 	if defender.ability == 'Commander' and defender2.name.name == 'Dondozo':
 		return result
 

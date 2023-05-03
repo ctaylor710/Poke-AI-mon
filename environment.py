@@ -11,6 +11,7 @@ import utils
 import damageCalc
 import numpy as np
 import random
+import pickle
 
 database = database()
 database.addMoves()
@@ -459,7 +460,15 @@ def actionVector(result):
 	actionVec.append(result.confusion)
 	actionVec.append(result.preventsSound)
 
-	# actionVec.append(moveIndex)
+	moveIndex = 4
+	if result.user < 2:
+		poke = result.field.userSide.pokes[result.user]
+	else:
+		poke = result.field.opponentSide.pokes[result.user-2]
+	for i in range(len(poke.moves)):
+		if poke.moves[i].name == result.move.name:
+			moveIndex = i
+	actionVec.append(moveIndex)
 
 
 	return actionVec
@@ -518,7 +527,8 @@ def TakeAction(field, pokes, moves, targets, availablePokes, repeat):
 					turnOrder[i][0] = inMon
 					field.opponentSide.pokes[userIndex] = inMon
 				if repeat:
-					print(f'{attackerSide}\'s {outMon.name.name} switched with {inMon.name.name}')
+					pass
+					# print(f'{attackerSide}\'s {outMon.name.name} switched with {inMon.name.name}')
 				if t == 1 or t == 2:
 					defenderSide = 'user'
 				else:
@@ -536,7 +546,8 @@ def TakeAction(field, pokes, moves, targets, availablePokes, repeat):
 				defender = pokes[t-1]
 				if not (turnOrder[i][1].name == 'Sucker Punch' and moves[t-1].category == 'Status'):
 					if repeat:
-						print(f'move {i+1}: {attackerSide}\'s {turnOrder[i][0].name.name} uses {turnOrder[i][1].name} against {defenderSide}\'s {defender.name.name}')
+						pass
+						# print(f'move {i+1}: {attackerSide}\'s {turnOrder[i][0].name.name} uses {turnOrder[i][1].name} against {defenderSide}\'s {defender.name.name}')
 					moveResult = damageCalc.TakeMove(turnOrder[i][0], attackerSide, defender, defenderSide, turnOrder[i][1], field, t, moveResult)
 				moveResult.user = user
 				moveResult.target.append(t)
@@ -719,8 +730,9 @@ def Dynamics(state, field, pokes, moves, targets, availablePokes, envMode='simul
 				if inRangeHealth == 0 and state[j][14] == state[j][2] and state[j][15] == 1: # Focus band check
 					inRangeHealth += 1
 				if j == 0:
-					print(f'move {i}')
-				print(f'{pokes[j].name.name}\'s HP: {state[j][14]}; damage dealt: {state[j][14] - inRangeHealth}')
+					pass
+					# print(f'move {i}')
+				# print(f'{pokes[j].name.name}\'s HP: {state[j][14]}; damage dealt: {state[j][14] - inRangeHealth}')
 				state[j][14] = inRangeHealth
 				#pokes[userPos].currHP = inRangeHealth
 				fieldVec = action[j][2]
@@ -978,3 +990,13 @@ def demonstration():
 	else:
 		print('you lost!')
 	return states, actions
+
+def Step(state, field, pokes, moves, targets, availablePokes):
+	theta = pickle.load(open('IRLWeights.pkl', 'rb'))
+	action = TakeAction(field, pokes, moves, targets, availablePokes, True)
+	next_state = Dynamics(state, field, pokes, moves, targets, availablePokes, envMode='RL Learning')[0]
+	reward = Reward(state, action, theta)
+	dones = 1 if KOed(field.userSide) or KOed(field.opponentSide) else 0
+	return action, next_state, reward, dones
+
+

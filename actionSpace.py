@@ -14,16 +14,6 @@ import random
 import environment as env
 import demonstration as dem
 
-database = database()
-database.addMoves()
-database.addTypes()
-database.addSpecies()
-database.addNatures()
-
-file = open("DemonstrationData.txt", "r")
-# At the end of the day, the information we need are the moves and target for the four pokemon on the field
-# Using the ActionSpaceBot function below would output the move and target for the two poekmon the robot is contolling
-# Use the MaxDamage AI would output the move and target for the human is controlling
 
 def ActionSpaceBot(userPoke, ally, availablePokes, field):
 	actions = []
@@ -106,31 +96,31 @@ def ActionSpaceHuman (field):
 
 
 
-myField = field()
-userTeam, opponentTeam = env.CreateEnv()
+# myField = field()
+# userTeam, opponentTeam = env.CreateEnv()
 
-userPokes = random.sample(range(6), 4)
-myField.userSide.pokes[0] = userTeam[userPokes[0]]
-myField.userSide.pokes[1] = userTeam[userPokes[1]]
-myField.userSide.side = 'user'
-myField.userSide.availablePokes[0] = userTeam[userPokes[2]]
-myField.userSide.availablePokes[1] = userTeam[userPokes[3]]
+# userPokes = random.sample(range(6), 4)
+# myField.userSide.pokes[0] = userTeam[userPokes[0]]
+# myField.userSide.pokes[1] = userTeam[userPokes[1]]
+# myField.userSide.side = 'user'
+# myField.userSide.availablePokes[0] = userTeam[userPokes[2]]
+# myField.userSide.availablePokes[1] = userTeam[userPokes[3]]
 
-opponentPokes = random.sample(range(6), 4)
-myField.opponentSide.pokes[0] = opponentTeam[opponentPokes[0]]
-myField.opponentSide.pokes[1] = opponentTeam[opponentPokes[1]]
-myField.opponentSide.side = 'opponent'
-myField.opponentSide.availablePokes[0] = opponentTeam[opponentPokes[2]]
-myField.opponentSide.availablePokes[1] = opponentTeam[opponentPokes[3]]
+# opponentPokes = random.sample(range(6), 4)
+# myField.opponentSide.pokes[0] = opponentTeam[opponentPokes[0]]
+# myField.opponentSide.pokes[1] = opponentTeam[opponentPokes[1]]
+# myField.opponentSide.side = 'opponent'
+# myField.opponentSide.availablePokes[0] = opponentTeam[opponentPokes[2]]
+# myField.opponentSide.availablePokes[1] = opponentTeam[opponentPokes[3]]
 
 
-movesBot, targetBot = ActionSpaceBot(myField.userSide.pokes[0], myField.userSide.pokes[1], myField.userSide.availablePokes, myField)
-movesHuman, targeHuman = ActionSpaceHuman(myField)
-# print(movesBot)
-# print(targetBot)
-# print(movesHuman)
-# print(targeHuman)
+# movesBot, targetBot = ActionSpaceBot(myField.userSide.pokes[0], myField.userSide.pokes[1], myField.userSide.availablePokes, myField)
+# movesHuman, targeHuman = ActionSpaceHuman(myField)
+# # print(movesBot)
+# # print(targetBot)
+# # print(movesHuman)
+# # print(targeHuman)
 
-testmove = movesBot[0] + movesHuman
-testtarget = targetBot[0] + targeHuman
-action = env.TakeAction(myField, myField.userSide.pokes + myField.opponentSide.pokes, testmove, testtarget, myField.userSide.availablePokes, True)
+# testmove = movesBot[0] + movesHuman
+# testtarget = targetBot[0] + targeHuman
+# action = env.TakeAction(myField, myField.userSide.pokes + myField.opponentSide.pokes, testmove, testtarget, myField.userSide.availablePokes, True)

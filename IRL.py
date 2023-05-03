@@ -13,7 +13,6 @@ import numpy as np
 import random
 import environment as env
 import pickle
-from singleVec import * 
 
 database = database()
 database.addMoves()
@@ -143,21 +142,21 @@ def MetroHasting(states, actions, N=1000):
 			theta = theta1
 	return theta_samples
 
-# MetroHasting(states, actions)
-# print(MetroHasting(states, actions))
-print(states[0])
+def FindWeights():
+	theta_pred = [0]*8
+	for _ in range(10):
+		theta_samples = MetroHasting(states, actions)
+		theta_samples = theta_samples[-11:-1]
+		for theta in theta_samples:
+			for i in range(len(theta)):
+				theta_pred[i] += theta[i]
+	for i in range(len(theta_pred)):
+		theta_pred[i] /= 100
 
-# Turnning the states and actions vectors into a single vectors
-states_single = []
-for idx in range(len(states)):
-	state_temp = states[idx]
-	state_temp = rework(state_temp)
-	states_single.append(state_temp)
+# print(theta_pred)
+# with open('IRLWeights.pkl', 'wb') as handle:
+# 	pickle.dump(theta_pred, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
-action_single = []
-for idx in range(len(actions)):
-	action_temp = actions[idx]
-	action_temp = rework(action_temp)
-	action_single.append(action_temp)
+# irl = pickle.load(open('IRLWeights.pkl', 'rb'))
 
 

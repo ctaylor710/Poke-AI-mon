@@ -2,6 +2,7 @@ from database.database import database
 from field import field
 from side import side
 from pokemon import pokemon
+from database.moves import move
 '''
 This class is designed to provide as much information as possible about the next state of our environment.
 
@@ -10,6 +11,7 @@ This class is designed to provide as much information as possible about the next
 class result:
 	def __init__(self):
 		self.attacker = pokemon()
+		self.move = move()
 		self.defender = pokemon()
 		self.attackerSide = side()
 		self.defenderSide = side()
