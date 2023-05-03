@@ -31,7 +31,7 @@ def categoryTable():
 	return {0:'Status', 1:'Physical', 2:'Special'}
 
 def targetTable():
-	return {0:'Adjacent', 1:'AdjacentAlly', 2:'AdjacentAllyOrSelf', 3:'AdjacentFoe', 4:'AllAdjacentFoes', 5:'Allies', 6:'All', 7:'Self'}
+	return {0:'Adjacent', 1:'AdjacentAlly', 2:'AdjacentAllyOrSelf', 3:'AdjacentFoe', 4:'AllAdjacentFoes', 5:'Allies', 6:'AllAdjacent', 7:'Self'}
 
 def itemTable():
 	return {0:'Ability Shield', 1:'Focus Sash', 2:'Bright Powder', 3:'Weakness Policy', 4:'Eject Button', 5:'Iron Ball', 6:'Safety Goggles', 7:'Terrain Extender', \
@@ -409,7 +409,11 @@ def actionVector(result):
 	actionVec = []
 
 	actionVec.append(result.user)
-	actionVec.append(result.target)
+	target = result.target.copy()
+	while len(target) < 3:
+		target.append(-1)
+	print(target)
+	actionVec.append(target)
 
 	actionVec.append(EncodeFieldInfo(result.field))
 	if result.attackerSide.side == 'user':
@@ -731,7 +735,11 @@ def Dynamics(state, field, pokes, moves, targets, availablePokes, envMode='simul
 				state = ConvertSideInfo(state, action[i][4], t)
 			userOrder = [action[j][0] for j in range(4)]
 			for j in range(4):
-				inRangeHealth = min(state[j][2], max(0, state[j][14] - action[i][5+j][-1]))
+				if envMode == 'simulation':
+					inRangeHealth = min(state[j][2], max(0, state[j][14] - action[i][5+j][-1]))
+				else:
+					randNum = random.randint(0, 15)
+					inRangeHealth = min(state[j][2], max(0, state[j][14] - action[i][5+j][randNum]))
 				if inRangeHealth == 0 and state[j][14] == state[j][2] and state[j][15] == 1: # Focus band check
 					inRangeHealth += 1
 				if j == 0:
@@ -1003,7 +1011,7 @@ def demonstration():
 def Step(state, field, pokes, moves, targets, availablePokes):
 	theta = pickle.load(open('IRLWeights.pkl', 'rb'))
 	action = TakeAction(field, pokes, moves, targets, availablePokes, True)
-	next_state = Dynamics(state, field, pokes, moves, targets, availablePokes)
+	next_state, field = Dynamics(state, field, pokes, moves, targets, availablePokes, envMode='RL Testing')
 	reward = Reward(state, action, theta)
 	dones = 1 if KOed(field.userSide) or KOed(field.opponentSide) else 0
 	return action, next_state, reward, dones
