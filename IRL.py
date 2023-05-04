@@ -122,8 +122,8 @@ def MetroHasting(states, actions, N=1000):
 		theta1 = [0]*8
 		for i in range(len(theta)):
 			theta1[i] = theta[i] + 0.1*(2*np.random.rand()-1)
-			if theta1[i] > 1:
-				theta1[i] = 1
+			# if theta1[i] > 1:
+			# 	theta1[i] = 1
 			if theta1[i] < 0:
 				theta1[i] = 0
 
@@ -136,8 +136,7 @@ def MetroHasting(states, actions, N=1000):
 			# print(env.Reward(states[i], actions[i], theta))
 			p_theta1 *= env.Reward(states[i], actions[i], theta1)
 			p_theta *= env.Reward(states[i], actions[i], theta)
-		# print(p_theta1)
-		# print(p_theta)
+		
 		# decide whether to accept new theta1
 		if p_theta1 / p_theta > p_accept:
 			theta = theta1
@@ -156,10 +155,10 @@ def FindWeights():
 	return theta_pred
 
 # print(theta_pred)
-# with open('IRLWeights.pkl', 'wb') as handle:
-# 	pickle.dump(theta_pred, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
-# irl = pickle.load(open('IRLWeights.pkl', 'rb'))
+
+# irl = pickle.load(open('IRLWeights2.pkl', 'rb'))
+# print(irl)
 thetas = np.zeros([1, 8])
 for i in range(100):
 	theta = FindWeights()
@@ -169,16 +168,25 @@ for i in range(100):
 		thetas = np.vstack([thetas, theta])
 	print(f'Loop number {i}')
 
+theta_avg = np.zeros([1, 8])
 for i in range(8):
 	f = plt.figure()
 	plt.plot(range(1, 101), thetas[:, i])
 	plt.title(f'Value of theta_{i+1} over 100 Runs of Metropolis-Hasting\'s Algorithm')
 	plt.xlabel('Iteration Number')
 	plt.ylabel('Weight Value')
-	plt.ylim([-0.1, 1.1])
+	plt.ylim([-0.1, 1.5])
 	f.show()
 	input('Press ENTER to continue: ')
 	plt.close()
 
+	print(np.sum(thetas[:, i]))
+	theta_avg[0, i] = np.sum(thetas[:, i])/100
+	print(theta_avg[0, i])
+
+
+with open('IRLWeights2.pkl', 'wb') as handle:
+	pickle.dump(theta_avg, handle, protocol=pickle.HIGHEST_PROTOCOL)
+print(theta_avg)
 
 

@@ -908,23 +908,41 @@ def Reward(state, action, theta):
 		speedReward = speedCost
 		speedCost = temp
 
+	if KOReward > 0:
+		KOReward = -1/KOReward
+	else:
+		KOReward = -2
+	# if KOCost > 0:
+	# 	KOCost = -1/KOCost
+	# else:
+	# 	KOCost = -2
+
 	if damageReward > 0:
 		damageReward = -1/damageReward
 	else:
 		damageReward = -2
-	if damageCost > 0:
-		damageCost = -1/damageCost
-	else:
-		damageCost = -2
+	# if damageCost > 0:
+	# 	damageCost = -1/damageCost
+	# else:
+	# 	damageCost = -2
 
 	if speedReward > 0:
 		speedReward = -1/speedReward
 	else:
 		speedReward = -2
-	if speedCost > 0:
-		speedCost = -1/speedCost
+	# if speedCost > 0:
+	# 	speedCost = -1/speedCost
+	# else:
+	# 	speedCost = -2
+
+	if switchReward > 0:
+		switchReward = -1/switchReward
 	else:
-		speedCost = -2
+		switchReward = -2
+	# if switchCost > 0:
+	# 	switchCost = -1/switchCost
+	# else:
+	# 	switchCost = -2
 
 	# print('KO Reward', KOReward)
 	# print('KO Cost', KOCost)
@@ -937,6 +955,9 @@ def Reward(state, action, theta):
 
 	totalReward = (theta[0]*KOReward - theta[1]*KOCost) + (theta[2]*damageReward - theta[3]*damageCost) + \
 		(theta[4]*speedReward - theta[5]*speedCost) + (theta[6]*switchReward - theta[7]*switchCost)
+
+	totalReward /= 10
+	# print('Total Reward', totalReward)
 
 	beta = 1
 	return np.exp(beta * totalReward)
