@@ -50,10 +50,42 @@ def botRandom(field):
     return botMove, botTarget
 
 
-# getHumanAction is a function that takes action vector as input and filter our the last two action, aka the human action
-def getHumanAction(actionVector):
-    HA = actionVector[-2] + actionVector[-1]
-    return HA
+# getHumanAction is a function that takes a field and output the human's action
+def getHumanAction(field):
+    humanMove, humanTarget = ActionSpaceHuman (field)
+    for idx in range(2):
+        attacker  = field.opponentSide.pokes[idx]
+        attackerSide = 'opponent'
+        movetemp = humanMove[idx]
+        target = humanTarget[idx]
+        moveResult = result()
+        for t in target:
+            if t <= 2:
+                defender = field.userSide.pokes[t-1]
+                defenderSide = 'user'
+            else:
+                defender = field.opponentSide.pokes[t-3]
+                defenderSide = 'opponent'
+
+            moveResult = damageCalc.TakeMove(attacker, attackerSide, defender, defenderSide, movetemp, field, t, moveResult)
+        action = env.actionVector(moveResult)
+    return action
+
+
+def reMovesNTarget(action):
+    newMoveVec = []
+    newTargetVec = [[],[],[],[]]
+    for a in action:
+        pokeMove = a[-1]
+        target = a[1]
+        user = a[0]
+        newMoveVec.append(pokes[user].moves[pokeMove])
+        newTargetVec[user].append(target)
+    return newMoveVec, newTargetVec
+
+
+
+
 
 
 # TODO 1. Creating four moves and target
@@ -64,26 +96,28 @@ humanMove, humanTarget = ActionSpaceHuman (myField)
 print(humanMove)
 print(humanTarget)
 
-a = humanTarget[0][0]
-print(humanMove)
+a = getHumanAction(myField)
+print(a)
+# a = humanTarget[0][0]
+# print(humanMove)
 
-for idx in range(len(humanMove)):
-    attacker  = myField.opponentSide.pokes[idx]
-    attackerSide = 'opponent'
-    movetemp = humanMove[idx]
-    target = humanTarget[idx]
-    moveResult = result()
-    for t in target:
-        if t <= 2:
-            defender = myField.userSide.pokes[t-1]
-            defenderSide = 'user'
-        else:
-            defender = myField.opponentSide.pokes[t-3]
-            defenderSide = 'opponent'
+# for idx in range(2):
+#     attacker  = myField.opponentSide.pokes[idx]
+#     attackerSide = 'opponent'
+#     movetemp = humanMove[idx]
+#     target = humanTarget[idx]
+#     moveResult = result()
+#     for t in target:
+#         if t <= 2:
+#             defender = myField.userSide.pokes[t-1]
+#             defenderSide = 'user'
+#         else:
+#             defender = myField.opponentSide.pokes[t-3]
+#             defenderSide = 'opponent'
 
-        moveResult = damageCalc.TakeMove(attacker, attackerSide, defender, defenderSide, movetemp, myField, t, moveResult)
-    action = env.actionVector(moveResult)
-print(action)
+#         moveResult = damageCalc.TakeMove(attacker, attackerSide, defender, defenderSide, movetemp, myField, t, moveResult)
+#     action = env.actionVector(moveResult)
+# print(action)
 
 
 
@@ -114,16 +148,7 @@ print(action)
 # #     moveIndices = a[-1]
 # #     print('move index', moveIndices)
 
-# def reMovesNTarget(action):
-#     newMoveVec = []
-#     newTargetVec = [[],[],[],[]]
-#     for a in action:
-#         pokeMove = a[-1]
-#         target = a[1]
-#         user = a[0]
-#         newMoveVec.append(pokes[user].moves[pokeMove])
-#         newTargetVec[user].append(target)
-#     return newMoveVec, newTargetVec
+
 
 
 # print('new moves')

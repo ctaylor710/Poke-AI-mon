@@ -14,16 +14,16 @@ class MyMemory:
         self.position = 0
 
     # push one datapoint
-    def push(self, state, action, reward, next_state, next_action, done):
+    def push(self, state, action, reward, next_state, done):
         self.buffer.append(None)
-        self.buffer[self.position] = (state, action, reward, next_state, next_action, done)
+        self.buffer[self.position] = (state, action, reward, next_state, done)
         self.position += 1
 
     # sample a random batch of datapoints
     def sample(self, batch_size):
         batch = random.sample(self.buffer, batch_size)
-        state, action, reward, next_state, next_action, done = map(np.stack, zip(*batch))
-        return state, action, reward, next_state, next_action, done
+        state, action, reward, next_state, done = map(np.stack, zip(*batch))
+        return state, action, reward, next_state, done
 
     # size of dataset
     def __len__(self):

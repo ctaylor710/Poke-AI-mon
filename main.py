@@ -76,26 +76,27 @@ def getHumanAction(actionVector):
     HA = actionVector[-2] + actionVector[-1]
     return HA
 
-# # field2SPMTA is a function that take field as input and outputing the state, pokemon, moves, target and avaliable moves for demonstration
-# def field2SPMTA(field):
-#     state = env.StateVector(field, field.userSide.pokes, field.opponentSide.pokes)
-#     pokes = field.userSide.pokes + field.opponentSide.pokes
-#     avaliablePokes = field.userSide.availablePokes
-#     botmoveList, bottargetList = ActionSpaceBot(field.userSide.pokes[0], field.userSide.pokes[1], avaliablePokes, field)
-#     # randomly pick a bot moves
-#     index = random.randint(0, 193)  # recall the length of the move List is 194
-#     botmove = botmoveList[index]
-#     bottarget = bottargetList[index]
-#     humanmove, humantarget  = ActionSpaceHuman(myField)
-#     moves = botmove + humanmove
-#     targets = bottarget + humantarget
 
-#     return state, pokes, moves, targets, avaliablePokes
+# getHumanAction is a function that takes a field and output the human's action
+def getHumanAction(field):
+    humanMove, humanTarget = ActionSpaceHuman (field)
+    for idx in range(2):
+        attacker  = field.opponentSide.pokes[idx]
+        attackerSide = 'opponent'
+        movetemp = humanMove[idx]
+        target = humanTarget[idx]
+        moveResult = result()
+        for t in target:
+            if t <= 2:
+                defender = field.userSide.pokes[t-1]
+                defenderSide = 'user'
+            else:
+                defender = field.opponentSide.pokes[t-3]
+                defenderSide = 'opponent'
 
-# getHumanAction is a function that takes action vector as input and filter our the last two action, aka the human action
-def getHumanAction(actionVector):
-    HA = actionVector[-2] + actionVector[-1]
-    return HA
+            moveResult = damageCalc.TakeMove(attacker, attackerSide, defender, defenderSide, movetemp, field, t, moveResult)
+        action = env.actionVector(moveResult)
+    return action
 
 # TODO 2. Actual DQN stuff
 # training parameters
@@ -144,23 +145,7 @@ for i_episode in range(1, 100):
             # humanMove, humanTarget = ActionSpaceHuman (myField)
             # 1.2 convert the moves and target into action, which we need to use the TakeMoves from damage calculation
             # TakeMove(attacker, attackerSide, defender, defenderSide, move, field, target, result)
-            for idx in range(len(humanMove)):
-                attacker  = myField.opponentSide.pokes[idx]
-                attackerSide = 'opponent'
-                movetemp = humanMove[idx]
-                target = humanTarget[idx]
-                moveResult = result()
-                for t in target:
-                    if t <= 2:
-                        defender = myField.userSide.pokes[t-1]
-                        defenderSide = 'user'
-                    else:
-                        defender = myField.opponentSide.pokes[t-3]
-                        defenderSide = 'opponent'
-
-                    moveResult = damageCalc.TakeMove(attacker, attackerSide, defender, defenderSide, movetemp, myField, t, moveResult)
-                HA = env.actionVector(moveResult)
-            # TODO 2. Get the robot action
+            HA = getHumanAction(myField)
             # 2.1 get the index of the robot action by using the dqn funciton robotaction
             # But first make sure the state and human action we fed in are a single vector, which we can use the rework functino from singleVec.py
             stateOne = rework(state)
@@ -172,11 +157,32 @@ for i_episode in range(1, 100):
         # Organize all the moves and target up into two vectors
         moveVec = botMove + humanMove
         targetVec = botTarget + humanTarget
-
-
         # Append robot moves, targets to appropriate vectors        
-        action, next_state, reward, dones, myField = env.Step(state, myField, pokes, moves, targets, avaliablePokes)
-        # memory.push, state = next_state, etc
+        action, next_state, reward, dones, next_Field = env.Step(state, myField, pokes, moveVec, targetVec, avaliablePokes)
+        # We also need next human action, which we can all the getHumanAction funtion
+        HA = action[-2] + action[-1]
+        next_HA = getHumanAction(next_Field)
+        # TODO 1. push into memory
+        # state, action, reward, next_state, next_action, done
+        # 1.1 convert all state, action, and next_state
+        stateOne = rework(state)
+        actionOne = rework(action)
+        next_state = rework(next_state)
+        HA = rework(HA)
+        next_HA = rework(next_HA)
+        stateCombined = stateOne + HA
+        next_stateCombined = next_state + next_HA
+        # 1.2 pushing
+        memory.push(stateCombined, actionOne, reward, next_stateCombined, done)
+        # 1.3 updating
+        episode_reward += reward
+        myField = next_Field
+        total_steps += 1
+    
+    print("Episode: {}, Reward: {}".format(i_episode, round(episode_reward, 2)))
+
+
+
 
         
 

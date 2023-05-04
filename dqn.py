@@ -41,7 +41,9 @@ class DQN(object):
     def update_parameters(self, memory, batch_size):
 
         # sample a batch from memory
-        state, action, reward, next_state, next_action, done = memory.sample(batch_size)
+        state, action, reward, next_state, done = memory.sample(batch_size)
+        # be cautious that the state is actually going to be the state + HA
+        # and the next_state is going to be the next_state + next_HA
 
         # convert to torch tensors
         #! Don't forgot to add the Human action into the state
@@ -51,7 +53,6 @@ class DQN(object):
         actions = torch.FloatTensor(action).unsqueeze(1).long()
         rewards = torch.FloatTensor(reward).unsqueeze(1)
         next_states = torch.FloatTensor(next_state)
-        next_action = torch.FloatTensor(next_action).unsqueeze(1).long()
         dones = torch.FloatTensor(done).unsqueeze(1)
 
         # Get max predicted Q values (for next states) from target model
