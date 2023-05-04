@@ -743,7 +743,6 @@ def Dynamics(state, field, pokes, moves, targets, availablePokes, envMode='simul
 					newResult.user = userPos
 					newResult.target.append(targetPos[0])
 					newResult.move = moves[userPos]
-					print('***********************', newResult.move)
 					action[i] = actionVector(newResult)
 
 

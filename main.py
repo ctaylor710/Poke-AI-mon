@@ -52,6 +52,30 @@ def botRandom(field):
     botTarget = botTargetList[index]
     return botMove, botTarget
 
+# botChoose is a function use the field and the index of the robot action to return the robot's moves and target
+def botChoose(field, index):
+    botMoveList, botTargetList = ActionSpaceBot(field.userSide.pokes[0], field.userSide.pokes[1], field.userSide.availablePokes, field)
+    botMove = botMoveList[index]
+    botTarget = botTargetList[index]
+    return botMove, botTarget
+
+
+def reMovesNTarget(action):
+    newMoveVec = []
+    newTargetVec = [[],[],[],[]]
+    for a in action:
+        pokeMove = a[-1]
+        target = a[1]
+        user = a[0]
+        newMoveVec.append(pokes[user].moves[pokeMove])
+        newTargetVec[user].append(target)
+    return newMoveVec, newTargetVec
+
+# getHumanAction is a function that takes action vector as input and filter our the last two action, aka the human action
+def getHumanAction(actionVector):
+    HA = actionVector[-2] + actionVector[-1]
+    return HA
+
 # # field2SPMTA is a function that take field as input and outputing the state, pokemon, moves, target and avaliable moves for demonstration
 # def field2SPMTA(field):
 #     state = env.StateVector(field, field.userSide.pokes, field.opponentSide.pokes)
@@ -99,7 +123,10 @@ for i_episode in range(1, 100):
     
 
     while not done:
+        # Initialization
         state, pokes, avaliablePokes = field2SPA(myField)
+        humanMove, humanTarget = ActionSpaceHuman (myField)
+        
         # train the models
         if len(memory) > batch_size:
             loss = agent.update_parameters(memory, batch_size)
@@ -111,9 +138,42 @@ for i_episode in range(1, 100):
             botMove, botTarget = botRandom(myField)
 
         else:
-            HA = env.maxDamageAI()
-            RA = agent.Robot_action(state, HA)
             # Recover what the moves and targets were from the robot action vector
+            # TODO 1. Get Human's action
+            # 1.1 get the human's move and human's target, both of them should be a vector with a size of two
+            # humanMove, humanTarget = ActionSpaceHuman (myField)
+            # 1.2 convert the moves and target into action, which we need to use the TakeMoves from damage calculation
+            # TakeMove(attacker, attackerSide, defender, defenderSide, move, field, target, result)
+            for idx in range(len(humanMove)):
+                attacker  = myField.opponentSide.pokes[idx]
+                attackerSide = 'opponent'
+                movetemp = humanMove[idx]
+                target = humanTarget[idx]
+                moveResult = result()
+                for t in target:
+                    if t <= 2:
+                        defender = myField.userSide.pokes[t-1]
+                        defenderSide = 'user'
+                    else:
+                        defender = myField.opponentSide.pokes[t-3]
+                        defenderSide = 'opponent'
+
+                    moveResult = damageCalc.TakeMove(attacker, attackerSide, defender, defenderSide, movetemp, myField, t, moveResult)
+                HA = env.actionVector(moveResult)
+            # TODO 2. Get the robot action
+            # 2.1 get the index of the robot action by using the dqn funciton robotaction
+            # But first make sure the state and human action we fed in are a single vector, which we can use the rework functino from singleVec.py
+            stateOne = rework(state)
+            HAOne = rework(HA)
+            robotIndex = agent.robotaction(stateOne,HAOne)
+            # 2.2 Use the index to recover the moves and target from the robot action space
+            botMove, botTarget = botChoose(myField,robotIndex)
+        
+        # Organize all the moves and target up into two vectors
+        moveVec = botMove + humanMove
+        targetVec = botTarget + humanTarget
+
+
         # Append robot moves, targets to appropriate vectors        
         action, next_state, reward, dones, myField = env.Step(state, myField, pokes, moves, targets, avaliablePokes)
         # memory.push, state = next_state, etc

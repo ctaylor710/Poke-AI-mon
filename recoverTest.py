@@ -40,16 +40,6 @@ def field2SPA(field):
     avaliablePokes = field.userSide.availablePokes
     return state, pokes, avaliablePokes
 
-# HumanMax is a function that when you pass a field it generate Human's moves and target based on max damage AI
-def HumanMax (field):
-	movesVec = []
-	targetVec = []
-	for i in range(2):
-		move, target = env.maxDamageAI(field.opponentSide.pokes[i], field.opponentSide.pokes[-1*i + 1], field.userSide, field)
-		movesVec.append(move)
-		targetVec.append(target)
-	return movesVec, targetVec
-
 # botRandom is a function that takes field as input and output two random pokmon moves and their target
 def botRandom(field):
     botMoveList, botTargetList = ActionSpaceBot(field.userSide.pokes[0], field.userSide.pokes[1], field.userSide.availablePokes, field)
@@ -70,14 +60,81 @@ def getHumanAction(actionVector):
 # 1.1 create bot moves and target
 botMove, botTarget = botRandom(myField)
 # 1.2 create human moves and target, which we need user pokemon, ally pokemon, opposingSide and field
-humanMove, humanTarget = HumanMax (myField)
-# 1.3 combine them together to create the actual moves and target vector
-moveVec = botMove + humanMove
-targetVec = 
+humanMove, humanTarget = ActionSpaceHuman (myField)
+print(humanMove)
+print(humanTarget)
+
+a = humanTarget[0][0]
+print(humanMove)
+
+for idx in range(len(humanMove)):
+    attacker  = myField.opponentSide.pokes[idx]
+    attackerSide = 'opponent'
+    movetemp = humanMove[idx]
+    target = humanTarget[idx]
+    moveResult = result()
+    for t in target:
+        if t <= 2:
+            defender = myField.userSide.pokes[t-1]
+            defenderSide = 'user'
+        else:
+            defender = myField.opponentSide.pokes[t-3]
+            defenderSide = 'opponent'
+
+        moveResult = damageCalc.TakeMove(attacker, attackerSide, defender, defenderSide, movetemp, myField, t, moveResult)
+    action = env.actionVector(moveResult)
+print(action)
 
 
-print(botMove, botTarget)
-print(humanMove,humanTarget)
+
+
+# # 1.3 combine them together to create the actual moves and target vector
+# moveVec = botMove + humanMove
+# targetVec = botTarget + humanTarget
+# # TODO 2. Create actions
+# state, pokes, avaliablePokes = field2SPA(myField)
+# action, next_state, reward, dones, next_field = env.Step(state, myField, pokes, moveVec, targetVec, avaliablePokes)
+# # print(action)
+# # TODO 3. Recover target from action
+# # print('old moves')
+# # [print(moveVec[i].name) for i in range(4)]
+# # print('old targets', targetVec)
+# # for i in range(4):
+# #     print('available moves')
+# #     [print(pokes[action[i][0]].moves[j].name) for j in range(4)]
+# #     if moveVec[i] != 'switch':
+# #         print('user', action[i][0])
+# #         print('move taken', moveVec[action[i][0]].name)
+# #     else:
+# #         print('move taken', moveVec[i])
+# # # The target are the second element in a pokemon's action
+# # for a in action:
+# #     targetRaw = a[1]
+# #     print('target', targetRaw)
+# #     moveIndices = a[-1]
+# #     print('move index', moveIndices)
+
+# def reMovesNTarget(action):
+#     newMoveVec = []
+#     newTargetVec = [[],[],[],[]]
+#     for a in action:
+#         pokeMove = a[-1]
+#         target = a[1]
+#         user = a[0]
+#         newMoveVec.append(pokes[user].moves[pokeMove])
+#         newTargetVec[user].append(target)
+#     return newMoveVec, newTargetVec
+
+
+# print('new moves')
+# [print(moveVec[i].name) for i in range(4)]
+# print('new targets', newTargetVec)
+
+    
+
+
+# print(botMove, botTarget)
+# print(humanMove,humanTarget)
 
 
 
