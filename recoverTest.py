@@ -52,6 +52,7 @@ def botRandom(field):
 
 # getHumanAction is a function that takes a field and output the human's action
 def getHumanAction(field):
+    action = []
     humanMove, humanTarget = ActionSpaceHuman (field)
     for idx in range(2):
         attacker  = field.opponentSide.pokes[idx]
@@ -68,8 +69,12 @@ def getHumanAction(field):
                 defenderSide = 'opponent'
 
             moveResult = damageCalc.TakeMove(attacker, attackerSide, defender, defenderSide, movetemp, field, t, moveResult)
-        action = env.actionVector(moveResult)
+        action += env.actionVector(moveResult)
     return action
+
+
+a = getHumanAction(myField)
+print(len(rework(a)))
 
 
 def reMovesNTarget(action):

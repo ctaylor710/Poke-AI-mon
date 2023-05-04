@@ -34,6 +34,8 @@ def ActionSpaceBot(userPoke, ally, availablePokes, field):
 			elif len(availablePokes) == 0:
 				target1 = [[-1, -1], [-1, -1]]
 		else:
+			if move1.category == 'Status' and move1.target == 'Adjacent':
+				move1.target = env.MoveTargets(move1)
 			if move1.target == 'Adjacent':
 				target1 = [[2],[3],[4]]
 			elif move1.target == 'AllAdjacentFoes':
@@ -42,6 +44,8 @@ def ActionSpaceBot(userPoke, ally, availablePokes, field):
 				target1 = [[2, 3, 4], [2, 3, 4], [2, 3, 4]]
 			elif move1.target == 'Self':
 				target1 = [[1], [1], [1]]
+			elif move1.target == 'Allies':
+				target1 = [[1, 2], [1, 2], [1, 2]]
 
 		for move2 in ally.moves + ['switch']:
 			if move2 == 'switch':
@@ -53,6 +57,8 @@ def ActionSpaceBot(userPoke, ally, availablePokes, field):
 					target2 = [[-1, -1], [-1, -1]]
 			else:
 				# target 2 store the index of all possible target for ally pokemon
+				if move2.category == 'Status' and move2.target == 'Adjacent':
+					move2.target = env.MoveTargets(move2)
 				if move2.target == 'Adjacent':
 					target2 = [[1],[3],[4]]
 				elif move2.target == 'AllAdjacentFoes':
@@ -60,7 +66,9 @@ def ActionSpaceBot(userPoke, ally, availablePokes, field):
 				elif move2.target == 'AllAdjacent':
 					target2 = [[1, 3, 4], [1, 3, 4], [1, 3, 4]]
 				elif move2.target == 'Self':
-					target2 = [[2], [2], [2]]				
+					target2 = [[2], [2], [2]]
+				elif move2.target == 'Allies':
+					target2 = [[1, 2], [1, 2], [1, 2]]				
 				# Store every possible moves and target into a list
 			for t1 in target1:
 				for t2 in target2:

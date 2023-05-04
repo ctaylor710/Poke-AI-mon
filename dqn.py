@@ -61,6 +61,8 @@ class DQN(object):
         Q_targets = rewards + self.gamma * Q_targets_next * (1.0 - dones)
 
         # Get expected Q values from local model
+        # print(len(states))
+        # print(len(actions))
         Q_expected = self.qnetwork_local(states).gather(1, actions)
 
         # Compute loss

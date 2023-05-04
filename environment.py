@@ -569,11 +569,12 @@ def TakeAction(field, pokes, moves, targets, availablePokes, repeat):
 					defenderSide = 'opponent'
 				defender = pokes[t-1]
 				# print(moves[t-1])
-				if not (turnOrder[i][1].name == 'Sucker Punch' and moves[t-1].category == 'Status'):
-					if repeat:
-						pass
-						# print(f'move {i+1}: {attackerSide}\'s {turnOrder[i][0].name.name} uses {turnOrder[i][1].name} against {defenderSide}\'s {defender.name.name}')
-					moveResult = damageCalc.TakeMove(turnOrder[i][0], attackerSide, defender, defenderSide, turnOrder[i][1], field, t, moveResult)
+				if not (turnOrder[i][1].name == 'Sucker Punch' and moves[t-1] == 'switch'):
+					if not (turnOrder[i][1].name == 'Sucker Punch' and moves[t-1].category == 'Status'):
+						if repeat:
+							pass
+							# print(f'move {i+1}: {attackerSide}\'s {turnOrder[i][0].name.name} uses {turnOrder[i][1].name} against {defenderSide}\'s {defender.name.name}')
+						moveResult = damageCalc.TakeMove(turnOrder[i][0], attackerSide, defender, defenderSide, turnOrder[i][1], field, t, moveResult)
 				moveResult.user = user
 				moveResult.target.append(t)
 				moveResult.move = turnOrder[i][1]
@@ -785,11 +786,19 @@ def Dynamics(state, field, pokes, moves, targets, availablePokes, envMode='simul
 								p = random.randint(0, 99)
 								if action[i][9+j][k][2] > p:
 									field.userSide.pokes[userOrder[j]].boosts[stat] += stages
+									if field.userSide.pokes[userOrder[j]].boosts[stat] < -6:
+										field.userSide.pokes[userOrder[j]].boosts[stat] = -6
+									if field.userSide.pokes[userOrder[j]].boosts[stat] > 6:
+										field.userSide.pokes[userOrder[j]].boosts[stat] = 6
 							else:
 								statTableCopy = statTable()
 								statTableCopy = {i: k for k, i in statTableCopy.items()}
 								statName = statTableCopy.get(stat)
 								field.userSide.pokes[j].boosts[statName] += stages
+								if field.userSide.pokes[j].boosts[statName] < -6:
+									field.userSide.pokes[j].boosts[statName] = -6
+								if field.userSide.pokes[j].boosts[statName] > 6:
+									field.userSide.pokes[j].boosts[statName] = 6
 					# print(field.userSide.pokes[j].boosts)
 
 					if action[j][13]:
