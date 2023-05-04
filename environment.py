@@ -952,11 +952,12 @@ def Reward(state, action, theta):
 	# print('Switch Reward', switchReward)
 	# print('Switch Cost', switchCost)
 
-	totalReward = (theta[0]*KOReward - theta[1]*KOCost) + (theta[2]*damageReward - theta[3]*damageCost) + \
+	totalReward = (10*theta[0]*KOReward - 10*theta[1]*KOCost) + (theta[2]*damageReward - theta[3]*damageCost) + \
 		(theta[4]*speedReward - theta[5]*speedCost) + (theta[6]*switchReward - theta[7]*switchCost)
 
-	beta = 1
-	return np.exp(beta * totalReward)
+	return totalReward
+	# beta = 1
+	# return np.exp(beta * totalReward)
 
 def KOed(side):
 	if len(side.availablePokes) == 0 and side.pokes[0].currHP == 0 and side.pokes[1].currHP == 0:
@@ -1032,11 +1033,15 @@ def demonstration():
 	return states, actions
 
 def Step(state, field, pokes, moves, targets, availablePokes):
-	theta = pickle.load(open('IRLWeights.pkl', 'rb'))
+	theta = pickle.load(open('IRLWeights2.pkl', 'rb')).tolist()[0]
 	action = TakeAction(field, pokes, moves, targets, availablePokes, True)
 	next_state, field = Dynamics(state, field, pokes, moves, targets, availablePokes, envMode='RL Testing')
 	reward = Reward(state, action, theta)
 	dones = 1 if KOed(field.userSide) or KOed(field.opponentSide) else 0
+	if KOed(field.userSide):
+		print('loss')
+	if KOed(field.opponentSide):
+		print('win')
 	return action, next_state, reward, dones, field
 
 
