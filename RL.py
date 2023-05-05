@@ -18,6 +18,7 @@ from actionSpace import *
 from memory import MyMemory
 from dqn import DQN
 import torch
+import os
 
 # TODO 1. Initialize the states
 
@@ -52,6 +53,8 @@ def botRandom(field):
 # botChoose is a function use the field and the index of the robot action to return the robot's moves and target
 def botChoose(field, index):
     botMoveList, botTargetList = ActionSpaceBot(field.userSide.pokes[0], field.userSide.pokes[1], field.userSide.availablePokes, field)
+    # print(len(botMoveList))
+    # print(index)
     botMove = botMoveList[min(index, len(botMoveList)-1)]
     botTarget = botTargetList[min(index, len(botMoveList)-1)]
     return botMove, botTarget
@@ -91,7 +94,7 @@ def getHumanAction(field):
     return action
 
 # TODO 2. Actual DQN stuff
-def RLTraining(localFilePath='localQNetwork.pth', targetFilePath='targetQNetwork.pth'):
+def RLTraining(localFilePath='localQNetwork.pth', targetFilePath='targetQNetwork.pth', optimizerFilePath='optimizer.pth', memoryFilePath='memory.pkl'):
     # training parameters
     batch_size = 128
 
@@ -103,16 +106,23 @@ def RLTraining(localFilePath='localQNetwork.pth', targetFilePath='targetQNetwork
     # The length of the state is 518, the length of the actio is 636, the length of the human aaction is 318
     state_size = 518
     HA_size = 318
-    action_size = 636
+    action_size = 194
     agent = DQN(state_size, HA_size, action_size)
     if localFilePath != None:
         agent.qnetwork_local = torch.load(localFilePath)
         agent.qnetwork_local.eval()
         agent.qnetwork_target = torch.load(targetFilePath)
         agent.qnetwork_target.eval()
+        agent.optimizer = torch.load(optimizerFilePath)
+        print('Q-Networks loaded')
 
     # Creating Memory
     memory = MyMemory()
+    memoryLoaded = False
+    if memoryFilePath != None:
+        memory = pickle.load(open('memory.pkl', 'rb'))
+        os.remove('memory.pkl') # Lets you rewrite memory to pickle file instead of appending it to already created file
+        memoryLoaded = True
     total_steps = 0
 
     # Main loop
@@ -148,7 +158,7 @@ def RLTraining(localFilePath='localQNetwork.pth', targetFilePath='targetQNetwork
             
             # use policy to select action
             # choose random action for a while
-            if total_steps < 1000:
+            if total_steps < 1000 and not memoryLoaded:
                 # choose two random moves and targets
                 botMove, botTarget, robotIndex = botRandom(myField)
 
@@ -202,7 +212,9 @@ def RLTraining(localFilePath='localQNetwork.pth', targetFilePath='targetQNetwork
     if localFilePath == None:
         localFilePath = 'localQNetwork.pth'
         targetFilePath = 'targetQNetwork.pth'
-    return agent.qnetwork_local, localFilePath, agent.qnetwork_target, targetFilePath
+        optimizerFilePath = 'optimizer.pth'
+        memoryFilePath = 'memory.pkl'
+    return agent.qnetwork_local, localFilePath, agent.qnetwork_target, targetFilePath, agent.optimizer, optimizerFilePath, memory, memoryFilePath
 
 
 

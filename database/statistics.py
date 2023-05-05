@@ -18,6 +18,7 @@ class statistics:
 		ItemIdx = line.find('Items')
 		MoveIdx = line.find('Moves')
 		SpreadIdx = line.find('Spreads')
+		Teammates = line.find('Teammates')
 		# If the word is detected, change the flag to extract datas
 		if AbiIdx != -1:
 			self.AbiFlag = True
@@ -39,6 +40,11 @@ class statistics:
 			self.ItemFlag = False
 			self.MoveFlag = False
 			self.SpreadFlag = True
+		if Teammates != -1:
+			self.AbiFlag = False
+			self.ItemFlag = False
+			self.MoveFlag = False
+			self.SpreadFlag = False
 		# Storing the data in a dctionary
 		if self.AbiFlag == True:
 			startIndex = line.find('|')

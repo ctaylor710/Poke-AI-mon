@@ -22,10 +22,9 @@ class DQN(object):
         self.gamma = 0.99
         self.tau = 1e-3
         self.LR = 1e-4  # learning rate
-        self.hidden_dim = 64
+        self.hidden_dim = 752
 
         # Q-Network
-        # in my notes Q = Q_local and Q' = Q_target
         self.qnetwork_local = QNetwork(self.state_size, self.action_size, self.hidden_dim)
         self.qnetwork_target = QNetwork(self.state_size, self.action_size, self.hidden_dim)
         self.optimizer = Adam(self.qnetwork_local.parameters(), lr=self.LR)
@@ -37,6 +36,18 @@ class DQN(object):
         Q_state = self.qnetwork_local(state).detach().numpy()
         return np.argmax(Q_state)
 
+    def Robot_action_N(self, state, HA, N):
+        state = state + HA
+        state = torch.FloatTensor(state)
+        Q_state = self.qnetwork_local(state).detach().numpy()
+        actions = []; rewards = []
+        for i in range(N):
+            actions.append(np.argmax(Q_state))
+            rewards.append(np.max(Q_state))
+            Q_state = np.delete(Q_state, [np.argmax(Q_state)])
+
+        return actions, rewards
+
     # train the Q-functions
     def update_parameters(self, memory, batch_size):
 
@@ -46,9 +57,6 @@ class DQN(object):
         # and the next_state is going to be the next_state + next_HA
 
         # convert to torch tensors
-        #! Don't forgot to add the Human action into the state
-        # The human action can got from the actions it self
-        # similarlly we also need to add the next_actions into the memory as well
         states = torch.FloatTensor(state)
         actions = torch.FloatTensor(action).unsqueeze(1).long()
         rewards = torch.FloatTensor(reward).unsqueeze(1)

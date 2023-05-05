@@ -37,10 +37,11 @@ def itemTable():
 	return {0:'Ability Shield', 1:'Focus Sash', 2:'Bright Powder', 3:'Weakness Policy', 4:'Eject Button', 5:'Iron Ball', 6:'Safety Goggles', 7:'Terrain Extender', \
 		8:'Light Clay', 9:'Choice Band', 10:'Choice Specs', 11:'Choice Scarf', 12:'Heavy-Duty Boots', 13:'Rocky Helmet', 14:'Expert Belt', 15:'Zoom Lens', \
 		16:'Life Orb', 17:'Sitrus Berry', 18:'Assault Vest', 19:'Leftovers', 20:'Lum Berry', 21:'Air Balloon', 22:'Charcoal', 23:'Booster Energy', \
-		24:'Psychic Seed', 25:'Twisted Spoon', 26:'Mystic Water', 27:'Dragon Fang', 28:'Covert Clock', 29:'Clear Amulet', 30:'Black Sludge', 31:'Red Card', \
+		24:'Psychic Seed', 25:'Twisted Spoon', 26:'Mystic Water', 27:'Dragon Fang', 28:'Covert Cloak', 29:'Clear Amulet', 30:'Black Sludge', 31:'Red Card', \
 		32:'Babiri Berry', 33:'Charti Berry', 34:'Chilan Berry', 35:'Chople Berry', 36:'Coba Berry', 37:'Colbur Berry', 38:'Haban Berry', 39:'Kasib Berry', \
 		40:'Kebia Berry', 41:'Occa Berry', 42:'Passho Berry', 43:'Payapa Berry', 44:'Rindo Berry', 45:'Roseli Berry', 46:'Shuca Berry', 47:'Tanga Berry', \
-		48:'Wacan Berry', 49:'Yache Berry', 50:'Mirror Herb', 51:'Mental Herb', 52:'Loaded Dice'}
+		48:'Wacan Berry', 49:'Yache Berry', 50:'Mirror Herb', 51:'Mental Herb', 52:'Loaded Dice', 53:'Aguav Berry', 54:'Figy Berry', 55:'Mago Berry', \
+		56:'Black Glasses', 57:'Iapapa Berry'}
 
 def abilityTable():
 	return {0:'Adaptability', 1:'Aerilate', 2:'Aftermath', 3:'Air Lock', 4:'Analytic', 5:'Anger Point', 6:'Anger Shell', 7:'Anticipation', \
@@ -929,19 +930,21 @@ def Reward(state, action, theta):
 		damageReward = -1/damageReward
 	else:
 		damageReward = -2
-	if damageCost > 0:
-		damageCost = -1/damageCost
+
+	if KOReward > 0:
+		KOReward = -1/KOReward
 	else:
-		damageCost = -2
+		KOReward = -2
 
 	if speedReward > 0:
 		speedReward = -1/speedReward
 	else:
 		speedReward = -2
-	if speedCost > 0:
-		speedCost = -1/speedCost
+
+	if switchReward > 0:
+		switchReward = -1/switchReward
 	else:
-		speedCost = -2
+		switchReward = -2
 
 	# print('KO Reward', KOReward)
 	# print('KO Cost', KOCost)
@@ -952,7 +955,7 @@ def Reward(state, action, theta):
 	# print('Switch Reward', switchReward)
 	# print('Switch Cost', switchCost)
 
-	totalReward = (10*theta[0]*KOReward - 10*theta[1]*KOCost) + (theta[2]*damageReward - theta[3]*damageCost) + \
+	totalReward = (theta[0]*KOReward - theta[1]*KOCost) + (theta[2]*damageReward - theta[3]*damageCost) + \
 		(theta[4]*speedReward - theta[5]*speedCost) + (theta[6]*switchReward - theta[7]*switchCost)
 
 	return totalReward

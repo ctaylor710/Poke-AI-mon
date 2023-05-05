@@ -46,6 +46,8 @@ def ActionSpaceBot(userPoke, ally, availablePokes, field):
 				target1 = [[1], [1], [1]]
 			elif move1.target == 'Allies':
 				target1 = [[1, 2], [1, 2], [1, 2]]
+			elif move1.target == 'All':
+				target1 = [[1, 2, 3, 4], [1, 2, 3, 4], [1, 2, 3, 4]]
 
 		for move2 in ally.moves + ['switch']:
 			if move2 == 'switch':
@@ -68,7 +70,9 @@ def ActionSpaceBot(userPoke, ally, availablePokes, field):
 				elif move2.target == 'Self':
 					target2 = [[2], [2], [2]]
 				elif move2.target == 'Allies':
-					target2 = [[1, 2], [1, 2], [1, 2]]				
+					target2 = [[1, 2], [1, 2], [1, 2]]
+				elif move2.target == 'All':
+					target2 = [[1, 2, 3, 4], [1, 2, 3, 4], [1, 2, 3, 4]]		
 				# Store every possible moves and target into a list
 			for t1 in target1:
 				for t2 in target2:

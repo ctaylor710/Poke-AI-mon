@@ -20,11 +20,14 @@ from dqn import DQN
 import RL
 import torch
 
-endLoop = False; localFilePath = None; targetFilePath = None
+endLoop = False; localFilePath = None; targetFilePath = None; optimizerFilePath = None; memoryFilePath = None
 while not endLoop:
-	qnetwork_local, localFilePath, qnetwork_target, targetFilePath = RL.RLTraining(localFilePath, targetFilePath)
+	qnetwork_local, localFilePath, qnetwork_target, targetFilePath, optimizer, optimizerFilePath, memory, memoryFilePath = RL.RLTraining(localFilePath, targetFilePath, optimizerFilePath, memoryFilePath)
 	torch.save(qnetwork_local, localFilePath)
 	torch.save(qnetwork_target, targetFilePath)
+	torch.save(optimizer, optimizerFilePath)
+	with open('memory.pkl', 'wb') as handle:
+		pickle.dump(memory, handle, protocol=pickle.HIGHEST_PROTOCOL)
 	string = input('Type \'end\' to finish training. Otherwise, press any key to continue: ')
 	if string == 'end':
 		endLoop = True
