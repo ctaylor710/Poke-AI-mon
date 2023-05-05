@@ -532,7 +532,7 @@ def TakeAction(field, pokes, moves, targets, availablePokes, repeat):
 			if t == 0 and repeat: # switching flag
 				inTarget = target[1] - 5
 				outMon = turnOrder[i][0]
-				if inTarget <= 2:
+				if inTarget < 2:
 					inMon = field.userSide.availablePokes[inTarget]
 					field.userSide.availablePokes[inTarget] = turnOrder[i][0]
 					userIndex = 0 if turnOrder[i][0].name.name == field.userSide.pokes[0].name.name else 1
@@ -550,7 +550,7 @@ def TakeAction(field, pokes, moves, targets, availablePokes, repeat):
 					field.opponentSide.pokes[userIndex] = inMon
 				if repeat:
 					pass
-					# print(f'{attackerSide}\'s {outMon.name.name} switched with {inMon.name.name}')
+					print(f'{attackerSide}\'s {outMon.name.name} switched with {inMon.name.name}')
 				if t == 1 or t == 2:
 					defenderSide = 'user'
 				else:
@@ -759,6 +759,7 @@ def Dynamics(state, field, pokes, moves, targets, availablePokes, envMode='simul
 				if inRangeHealth == 0 and state[j][14] == state[j][2] and state[j][15] == 1: # Focus band check
 					inRangeHealth += 1
 				if j == 0:
+					pass
 					print(f'move {i}')
 				print(f'{pokes[j].name.name}\'s HP: {state[j][14]}; damage dealt: {state[j][14] - inRangeHealth}')
 				state[j][14] = inRangeHealth
@@ -879,7 +880,7 @@ def Dynamics(state, field, pokes, moves, targets, availablePokes, envMode='simul
 				field.opponentSide.pokes[pos-2] = field.opponentSide.availablePokes[0]
 				pokes[pos] = field.opponentSide.availablePokes[0]
 				field.opponentSide.availablePokes.pop(0)
-				print('opponent switch')
+				# print('opponent switch')
 
 	state = ResetConditions(field, state)
 	state = StateVector(field, field.userSide.pokes, field.opponentSide.pokes)

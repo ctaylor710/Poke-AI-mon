@@ -47,6 +47,13 @@ def DamageCalc(attacker, attackerSide, defender, defenderSide, move, field, targ
 		ally = field.userSide.pokes[-1*allyIndex+1]
 		defender = field.opponentSide.pokes[0]
 		defender2 = field.opponentSide.pokes[1]
+	elif move == 'switch' and attackerSide == 'opponent':
+		attackerSide = field.opponentSide
+		defenderSide = field.userSide
+		allyIndex = [i for i in range(len(field.opponentSide.pokes)) if field.opponentSide.pokes[i].name == attacker.name][0]
+		ally = field.opponentSide.pokes[-1*allyIndex+1]
+		defender = field.userSide.pokes[0]
+		defender2 = field.userSide.pokes[1]
 	elif attackerSide == 'user' and defenderSide != 'user':
 		attackerSide = field.userSide
 		defenderSide = field.opponentSide

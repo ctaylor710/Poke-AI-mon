@@ -99,8 +99,8 @@ def RobotAction(userPoke, ally, opposingSide, poke1HPPercent, poke2HPPercent, fi
 		sampleField.opponentSide.pokes[0].currHP = poke1HPPercent*sampleField.opponentSide.pokes[0].rawStats['hp']
 		sampleField.opponentSide.pokes[1] = poke2Guesses[i]
 		sampleField.opponentSide.pokes[1].currHP = poke2HPPercent*sampleField.opponentSide.pokes[1].rawStats['hp']
-		# print(sampleField.userSide.pokes[0])
-		# print(sampleField.userSide.pokes[1])
+		# print(sampleField.opponentSide.pokes[0])
+		# print(sampleField.opponentSide.pokes[1])
 		
 		state = env.StateVector(sampleField, sampleField.userSide.pokes, sampleField.opponentSide.pokes)
 		HA = RL.getHumanAction(sampleField)
@@ -136,6 +136,16 @@ def RobotAction(userPoke, ally, opposingSide, poke1HPPercent, poke2HPPercent, fi
 		minIndex = np.argmin(avgRewards)
 		robotMove = botMoves[minIndex][0]
 		robotTarget = botTargets[minIndex][0]
+	# [print(robotMove[i]) for i in range(2)]
+	# print('before', robotTarget)
+	for i in range(len(robotTarget)):
+		for j in range(len(robotTarget[i])):
+			if robotTarget[i][j] in [1, 2, 5, 6]:
+				robotTarget[i][j] += 2
+			elif robotTarget[i][j] in [3, 4]:
+				robotTarget[i][j] -= 2
+
+	# print('after', robotTarget)
 	return robotMove, robotTarget
 
 
@@ -241,8 +251,8 @@ def Battle():
 		print(myField.userSide.pokes[0].name.name, myField.userSide.pokes[0].currHP)
 		print(myField.userSide.pokes[1].name.name, myField.userSide.pokes[1].currHP)
 		print('Opponent Pokemon HP Percentage')
-		print(myField.opponentSide.pokes[0].name.name, 100*round(myField.opponentSide.pokes[0].currHP/myField.opponentSide.pokes[0].stats['hp']), '%')
-		print(myField.opponentSide.pokes[1].name.name, 100*round(myField.opponentSide.pokes[1].currHP/myField.opponentSide.pokes[1].stats['hp']), '%')
+		print(myField.opponentSide.pokes[0].name.name, max(1, 100*round(myField.opponentSide.pokes[0].currHP/myField.opponentSide.pokes[0].rawStats['hp'], 2)), '%')
+		print(myField.opponentSide.pokes[1].name.name, max(1, 100*round(myField.opponentSide.pokes[1].currHP/myField.opponentSide.pokes[1].rawStats['hp'], 2)), '%')
 		moves = []
 		targets = []
 		for i in range(len(myField.userSide.pokes)):
@@ -256,17 +266,21 @@ def Battle():
 				moves.append(database.movesDict[move])
 			targets.append(target)
 
+		userPoke1Percentage = max(1, round(myField.userSide.pokes[0].currHP/myField.userSide.pokes[0].rawStats['hp']))
+		userPoke2Percentage = max(1, round(myField.userSide.pokes[1].currHP/myField.userSide.pokes[1].rawStats['hp']))
 		robotMoves, robotTargets = RobotAction(POField.userSide.pokes[0], POField.userSide.pokes[1], \
-			POField.opponentSide, round(myField.opponentSide.pokes[0].currHP/myField.opponentSide.pokes[0].stats['hp']), round(myField.opponentSide.pokes[1].currHP/myField.opponentSide.pokes[1].stats['hp']), POField)
+			POField.opponentSide, userPoke1Percentage, userPoke2Percentage, POField)
 		moves = moves+robotMoves
 		targets = targets+robotTargets
 		# print(moves)
 		# print(targets)
 
-		action = env.TakeAction(myField, pokes, moves, targets, availablePokes, False)
+		# action = env.TakeAction(myField, pokes, moves, targets, availablePokes, False)
 		# actions.append(str(action))
-
+		# print(action)
 		state, myField = env.Dynamics(state, myField, pokes, moves, targets, availablePokes)
+		# print(myField.opponentSide.pokes[0].currHP, myField.opponentSide.pokes[0].rawStats['hp'])
+		# print(myField.opponentSide.pokes[1].currHP)
 		# states.append(str(state))
 		# POField = UpdateRobotKnowledge(state, moves, myField)
 
