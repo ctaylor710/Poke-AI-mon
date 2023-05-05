@@ -126,7 +126,7 @@ def RLTraining(localFilePath='localQNetwork.pth', targetFilePath='targetQNetwork
     total_steps = 0
 
     # Main loop
-    for i_episode in range(1, 100):
+    for i_episode in range(1, 1000):
         episode_reward = 0
         done = False
         myField = field()
@@ -182,7 +182,7 @@ def RLTraining(localFilePath='localQNetwork.pth', targetFilePath='targetQNetwork
             moveVec = botMove + humanMove
             targetVec = botTarget + humanTarget
             # Append robot moves, targets to appropriate vectors        
-            action, next_state, reward, done, next_Field = env.Step(state, myField, pokes, moveVec, targetVec, avaliablePokes)
+            action, next_state, reward, done, next_Field = env.Step(state, myField, pokes, moveVec, targetVec, avaliablePokes, turns)
             # We also need next human action, which we can all the getHumanAction funtion
             HA = action[-2] + action[-1]
             next_HA = getHumanAction(next_Field)

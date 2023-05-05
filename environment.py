@@ -574,7 +574,7 @@ def TakeAction(field, pokes, moves, targets, availablePokes, repeat):
 					if not (turnOrder[i][1].name == 'Sucker Punch' and moves[t-1].category == 'Status'):
 						if repeat:
 							pass
-							# print(f'move {i+1}: {attackerSide}\'s {turnOrder[i][0].name.name} uses {turnOrder[i][1].name} against {defenderSide}\'s {defender.name.name}')
+							print(f'move {i+1}: {attackerSide}\'s {turnOrder[i][0].name.name} uses {turnOrder[i][1].name} against {defenderSide}\'s {defender.name.name}')
 						moveResult = damageCalc.TakeMove(turnOrder[i][0], attackerSide, defender, defenderSide, turnOrder[i][1], field, t, moveResult)
 				moveResult.user = user
 				moveResult.target.append(t)
@@ -759,9 +759,8 @@ def Dynamics(state, field, pokes, moves, targets, availablePokes, envMode='simul
 				if inRangeHealth == 0 and state[j][14] == state[j][2] and state[j][15] == 1: # Focus band check
 					inRangeHealth += 1
 				if j == 0:
-					pass
-					# print(f'move {i}')
-				# print(f'{pokes[j].name.name}\'s HP: {state[j][14]}; damage dealt: {state[j][14] - inRangeHealth}')
+					print(f'move {i}')
+				print(f'{pokes[j].name.name}\'s HP: {state[j][14]}; damage dealt: {state[j][14] - inRangeHealth}')
 				state[j][14] = inRangeHealth
 				#pokes[userPos].currHP = inRangeHealth
 				fieldVec = action[j][2]
@@ -880,14 +879,14 @@ def Dynamics(state, field, pokes, moves, targets, availablePokes, envMode='simul
 				field.opponentSide.pokes[pos-2] = field.opponentSide.availablePokes[0]
 				pokes[pos] = field.opponentSide.availablePokes[0]
 				field.opponentSide.availablePokes.pop(0)
-				# print('opponent switch')
+				print('opponent switch')
 
 	state = ResetConditions(field, state)
 	state = StateVector(field, field.userSide.pokes, field.opponentSide.pokes)
 
 	return state, field
 
-def Reward(state, action, theta):
+def Reward(state, action, numTurns, theta):
 	userKOs = 0; oppKOs = 0
 	switchReward = 0; switchCost = 0
 	for i in range(2):
@@ -926,25 +925,46 @@ def Reward(state, action, theta):
 			speedReward *= 2
 		if state[6][4]:
 			speedCost *= 2
+
+	turnCost = numTurns
+	# if damageReward > 0:
+	# 	damageReward = -1/damageReward
+	# else:
+	# 	damageReward = -2
+
+	# if KOReward > 0:
+	# 	KOReward = -1/KOReward
+	# else:
+	# 	KOReward = -2
+
+	# if speedReward > 0:
+	# 	speedReward = -1/speedReward
+	# else:
+	# 	speedReward = -2
+
+	# if switchReward > 0:
+	# 	switchReward = -1/switchReward
+	# else:
+	# 	switchReward = -2
+
 	if damageReward > 0:
 		damageReward = -1/damageReward
 	else:
 		damageReward = -2
-
-	if KOReward > 0:
-		KOReward = -1/KOReward
+	if damageCost > 0:
+		damageCost = -1/damageCost
 	else:
-		KOReward = -2
+		damageCost = -2
 
 	if speedReward > 0:
 		speedReward = -1/speedReward
 	else:
 		speedReward = -2
-
-	if switchReward > 0:
-		switchReward = -1/switchReward
+	if speedCost > 0:
+		speedCost = -1/speedCost
 	else:
-		switchReward = -2
+		speedCost = -2
+
 
 	# print('KO Reward', KOReward)
 	# print('KO Cost', KOCost)
@@ -955,8 +975,10 @@ def Reward(state, action, theta):
 	# print('Switch Reward', switchReward)
 	# print('Switch Cost', switchCost)
 
-	totalReward = (theta[0]*KOReward - theta[1]*KOCost) + (theta[2]*damageReward - theta[3]*damageCost) + \
-		(theta[4]*speedReward - theta[5]*speedCost) + (theta[6]*switchReward - theta[7]*switchCost)
+	# totalReward = (theta[0]*KOReward - theta[1]*KOCost) + (theta[2]*damageReward - theta[3]*damageCost) + \
+	# 	(theta[4]*speedReward - theta[5]*speedCost) + (theta[6]*switchReward - theta[7]*switchCost) - turnCost
+	totalReward = theta[0]*(KOReward - KOCost) + theta[1]*(damageReward - damageCost) + \
+		theta[2]*(speedReward - speedCost) + theta[3]*(switchReward - switchCost) - turnCost
 
 	return totalReward
 	# beta = 1
@@ -1035,11 +1057,11 @@ def demonstration():
 		print('you lost!')
 	return states, actions
 
-def Step(state, field, pokes, moves, targets, availablePokes):
+def Step(state, field, pokes, moves, targets, availablePokes, numTurns):
 	theta = pickle.load(open('IRLWeights2.pkl', 'rb')).tolist()[0]
 	action = TakeAction(field, pokes, moves, targets, availablePokes, True)
 	next_state, field = Dynamics(state, field, pokes, moves, targets, availablePokes, envMode='RL Testing')
-	reward = Reward(state, action, theta)
+	reward = Reward(state, action, numTurns, theta)
 	dones = 1 if KOed(field.userSide) or KOed(field.opponentSide) else 0
 	if KOed(field.userSide):
 		print('loss')

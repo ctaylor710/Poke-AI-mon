@@ -81,7 +81,7 @@ def ApplyPokemonSet(poke, pokeSet):
 
 
 def RobotAction(userPoke, ally, opposingSide, poke1HPPercent, poke2HPPercent, field):
-	actions = ActionSpaceBot(userPoke, ally, field.opponentSide.availablePokes, field)
+	actions = ActionSpaceBot(userPoke, ally, field.userSide.availablePokes, field)
 	poke1Probs = database.statsDict[opposingSide.pokes[0].name.name]
 	poke2Probs = database.statsDict[opposingSide.pokes[1].name.name]
 	poke1Items = poke1Probs.ItemDic; poke2Items = poke2Probs.ItemDic
@@ -95,12 +95,12 @@ def RobotAction(userPoke, ally, opposingSide, poke1HPPercent, poke2HPPercent, fi
 	robotMove = []; robotTarget = []
 	for i in range(len(poke1Guesses)):
 		sampleField = field
-		sampleField.userSide.pokes[0] = poke1Guesses[i]
-		sampleField.userSide.pokes[0].currHP = poke1HPPercent*sampleField.userSide.pokes[0].rawStats['hp']
-		sampleField.userSide.pokes[1] = poke2Guesses[i]
-		sampleField.userSide.pokes[1].currHP = poke2HPPercent*sampleField.userSide.pokes[1].rawStats['hp']
-		print(sampleField.userSide.pokes[0])
-		print(sampleField.userSide.pokes[1])
+		sampleField.opponentSide.pokes[0] = poke1Guesses[i]
+		sampleField.opponentSide.pokes[0].currHP = poke1HPPercent*sampleField.opponentSide.pokes[0].rawStats['hp']
+		sampleField.opponentSide.pokes[1] = poke2Guesses[i]
+		sampleField.opponentSide.pokes[1].currHP = poke2HPPercent*sampleField.opponentSide.pokes[1].rawStats['hp']
+		# print(sampleField.userSide.pokes[0])
+		# print(sampleField.userSide.pokes[1])
 		
 		state = env.StateVector(sampleField, sampleField.userSide.pokes, sampleField.opponentSide.pokes)
 		HA = RL.getHumanAction(sampleField)
@@ -117,10 +117,10 @@ def RobotAction(userPoke, ally, opposingSide, poke1HPPercent, poke2HPPercent, fi
 		N = 5
 		robotIndices, rewards = agent.Robot_action_N(stateOne, HAOne, N)
 		avgRewards.append(np.average(rewards))
-		print('indices', robotIndices)
+		# print('indices', robotIndices)
 		sampleBotMoves = []; sampleBotTargets = []
 		for j in range(N):
-			move, target = RL.botChoose(sampleField,robotIndices[j])
+			move, target = RL.botChoose(sampleField, robotIndices[j])
 			sampleBotMoves.append(move); sampleBotTargets.append(target)
 		botMoves.append(sampleBotMoves)
 		botTargets.append(sampleBotTargets)
@@ -208,23 +208,21 @@ def Battle():
 
 	state = env.StateVector(myField, myField.userSide.pokes, myField.opponentSide.pokes)
 	POField = field()
-	POField.opponentSide.pokes[0] = opponentTeam[opponentPokes[0]]
-	POField.opponentSide.pokes[1] = opponentTeam[opponentPokes[1]]
+	POField.userSide.pokes[0] = opponentTeam[opponentPokes[0]]
+	POField.userSide.pokes[1] = opponentTeam[opponentPokes[1]]
+	POField.userSide.side = 'opponent'
+	POField.userSide.availablePokes[0] = opponentTeam[opponentPokes[2]]
+	POField.userSide.availablePokes[1] = opponentTeam[opponentPokes[3]]
+
+	oppPoke1 = pokemon()
+	oppPoke1.name = userTeam[userPokes[0]].name
+	oppPoke1.moves = [pokeMove(), pokeMove(), pokeMove(), pokeMove()]
+	oppPoke2 = pokemon()
+	oppPoke2.name = userTeam[userPokes[1]].name
+	oppPoke2.moves = [pokeMove(), pokeMove(), pokeMove(), pokeMove()]
+	POField.opponentSide.pokes[0] = oppPoke1
+	POField.opponentSide.pokes[1] = oppPoke2
 	POField.opponentSide.side = 'opponent'
-	POField.opponentSide.availablePokes[0] = opponentTeam[opponentPokes[2]]
-	POField.opponentSide.availablePokes[1] = opponentTeam[opponentPokes[3]]
-
-	userPoke1 = pokemon()
-	userPoke1.name = userTeam[userPokes[0]].name
-	userPoke1.moves = [pokeMove(), pokeMove(), pokeMove(), pokeMove()]
-	userPoke2 = pokemon()
-	userPoke2.name = userTeam[userPokes[1]].name
-	userPoke2.moves = [pokeMove(), pokeMove(), pokeMove(), pokeMove()]
-	POField.userSide.pokes[0] = userPoke1
-	POField.userSide.pokes[1] = userPoke2
-	POField.userSide.side = 'user'
-
-	# Load Q-Function here
 
 	pokes = myField.userSide.pokes + myField.opponentSide.pokes
 	availablePokes = myField.userSide.availablePokes + myField.opponentSide.availablePokes
@@ -258,12 +256,12 @@ def Battle():
 				moves.append(database.movesDict[move])
 			targets.append(target)
 
-		robotMoves, robotTargets = RobotAction(POField.opponentSide.pokes[0], POField.opponentSide.pokes[1], \
-			POField.userSide, round(myField.userSide.pokes[0].currHP/myField.userSide.pokes[0].stats['hp']), round(myField.userSide.pokes[1].currHP/myField.userSide.pokes[1].stats['hp']), POField)
+		robotMoves, robotTargets = RobotAction(POField.userSide.pokes[0], POField.userSide.pokes[1], \
+			POField.opponentSide, round(myField.opponentSide.pokes[0].currHP/myField.opponentSide.pokes[0].stats['hp']), round(myField.opponentSide.pokes[1].currHP/myField.opponentSide.pokes[1].stats['hp']), POField)
 		moves = moves+robotMoves
 		targets = targets+robotTargets
-		print(moves)
-		print(targets)
+		# print(moves)
+		# print(targets)
 
 		action = env.TakeAction(myField, pokes, moves, targets, availablePokes, False)
 		# actions.append(str(action))
